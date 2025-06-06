@@ -3,21 +3,196 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>harry's awesome website</title>
+    <title>Hanyang Li</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
     <style>
+        /* Custom styles can go here if needed, but we'll primarily use Tailwind */
         body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            text-align: center;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .pixel-art {
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+        }
+        .logo-container {
+            width: 10rem; /* Equivalent to w-40 in Tailwind */
+            height: 10rem; /* Equivalent to h-40 in Tailwind */
+            position: relative;
+            overflow: hidden;
+        }
+        #logo-img {
+            position: absolute;
+            /* The image itself is larger than the container */
+            width: 12rem; /* w-48 */
+            height: 12rem; /* h-48 */
+            /* This shift crops the top and left edges */
+            top: -1.25rem; /* ~ -top-5 */
+            left: -1.25rem; /* ~ -left-5 */
         }
     </style>
 </head>
-<body>
-    <h1>ranked social</h1>
-    <p>ranked ranked ranked ranked ranked ranked ranked</p>
-    <p>ranked ranked ranked ranked ranked ranked rankedranked ranked ranked ranked ranked ranked rankedranked ranked ranked ranked ranked ranked rankedranked ranked ranked ranked ranked ranked rankedranked ranked ranked ranked ranked ranked rankedranked ranked ranked ranked ranked ranked rankedranked ranked ranked ranked ranked ranked ranked</a></p>
+<body class="bg-neutral-900 text-neutral-100 font-sans flex justify-center items-start min-h-screen p-4 sm:p-8">
+    <div class="max-w-4xl w-full">
+        <header class="flex justify-between items-center py-4">
+            <div class="-ml-12">
+                <a href="/">
+                    <div class="logo-container">
+                        <img id="logo-img" src="assets/normal.png" alt="logo" class="pixel-art">
+                    </div>
+                </a>
+            </div>
+            <nav id="nav-menu" class="hidden sm:flex items-center space-x-6 text-sm font-medium text-neutral-400">
+                <a href="#" class="hover:text-neutral-100 transition">ABOUT</a>
+                <a href="#" class="hover:text-neutral-100 transition">WORK</a>
+                <a href="#" class="hover:text-neutral-100 transition">NOT WORK</a>
+                <a href="#" class="hover:text-neutral-100 transition">RESUME</a>
+            </nav>
+        </header>
+
+        <main class="mt-16 sm:mt-24">
+            <div class="max-w-xl">
+                <h1 class="text-4xl font-semibold mb-4">hi :)</h1>
+                <p class="text-neutral-400 leading-relaxed">
+                    my name is harry li, I'm a 22 year old software engineer who is striving to build elegant software. i've worked most on mobile but love working on a product from start to finish. at my core, i'm a problem-solver, driven to find and build creative solutions whether the domain is medical ai, finance, or whatever comes next.
+                </p>
+            </div>
+            
+            <div class="mt-16 sm:mt-24" id="main-interactive">
+                <div class="work-section">
+                    <h2 class="text-sm font-semibold text-neutral-500 uppercase tracking-widest mb-4">WORK</h2>
+                    <div class="space-y-2">
+                        <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Capital One</span>
+                                <span class="text-neutral-500">Software Engineer</span>
+                            </div>
+                        </a>
+                        <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                           <div class="flex justify-between items-center">
+                                <span class="font-medium">Capital One</span>
+                                <span class="text-neutral-500">iOS Engineer Intern</span>
+                            </div>
+                            <p class="text-sm text-neutral-400 mt-1 lowercase">worked on the capital one super app and created its first widgets.</p>
+                        </a>
+                        <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                           <div class="flex justify-between items-center">
+                                <span class="font-medium">CapTech</span>
+                                <span class="text-neutral-500">Software Engineer Intern</span>
+                            </div>
+                            <p class="text-sm text-neutral-400 mt-1 lowercase">engineered a flight service with spring boot & aws.</p>
+                        </a>
+                        <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                           <div class="flex justify-between items-center">
+                                <span class="font-medium">CognitiveEMS</span>
+                                <span class="text-neutral-500">Research Assistant</span>
+                            </div>
+                            <p class="text-sm text-neutral-400 mt-1 lowercase">improved nlp capabilities for an ai ems assistant.</p>
+                        </a>
+                         <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                           <div class="flex justify-between items-center">
+                                <span class="font-medium">UVA Biocomplexity Institute</span>
+                                <span class="text-neutral-500">Research Assistant</span>
+                            </div>
+                            <p class="text-sm text-neutral-400 mt-1 lowercase">modeled systemic risk in bank lending with graph theory.</p>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="projects-section mt-16">
+                    <h2 class="text-sm font-semibold text-neutral-500 uppercase tracking-widest mb-4">PROJECTS</h2>
+                    <div class="space-y-2">
+                        <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Exeno</span>
+                            </div>
+                            <p class="text-sm text-neutral-400 mt-1 lowercase">removing the fear of rejection.</p>
+                        </a>
+                        <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">BigStack</span>
+                            </div>
+                             <p class="text-sm text-neutral-400 mt-1 lowercase">chess.com for poker.</p>
+                        </a>
+                        <a href="#" class="block p-3 -mx-3 rounded-md transition hover:bg-neutral-800">
+                            <div class="flex justify-between items-center">
+                                <span class="font-medium">Ranked Social</span>
+                            </div>
+                             <p class="text-sm text-neutral-400 mt-1 lowercase">create and share rankings.</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const logo = document.getElementById('logo-img');
+            const navMenu = document.getElementById('nav-menu');
+            const mainInteractive = document.getElementById('main-interactive');
+
+            const faces = {
+                normal: 'assets/normal.png',
+                smiley: 'assets/smiley.png',
+                right: 'assets/right.png',
+                bottomRight: 'assets/bottom right.png',
+                angry: 'assets/angry.png'
+            };
+
+            let isHoveringLogo = false;
+
+            // Set default face
+            logo.src = faces.normal;
+
+            logo.addEventListener('mouseover', () => {
+                isHoveringLogo = true;
+                logo.src = faces.smiley;
+            });
+
+            logo.addEventListener('mouseout', () => {
+                isHoveringLogo = false;
+                logo.src = faces.normal;
+            });
+
+            navMenu.addEventListener('mouseover', () => {
+                logo.src = faces.right;
+            });
+
+            navMenu.addEventListener('mouseout', () => {
+                logo.src = isHoveringLogo ? faces.smiley : faces.normal;
+            });
+            
+            mainInteractive.addEventListener('mouseover', () => {
+                logo.src = faces.bottomRight;
+            });
+
+            mainInteractive.addEventListener('mouseout', () => {
+                logo.src = isHoveringLogo ? faces.smiley : faces.normal;
+            });
+
+            document.documentElement.addEventListener('mouseleave', () => {
+                logo.src = faces.angry;
+            });
+
+            document.documentElement.addEventListener('mouseenter', () => {
+                logo.src = faces.normal;
+            });
+        });
+    </script>
 </body>
 </html> 
