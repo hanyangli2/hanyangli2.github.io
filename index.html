@@ -31,26 +31,24 @@
             image-rendering: -moz-crisp-edges;
         }
         .logo-container {
-            width: 10rem; /* Equivalent to w-40 in Tailwind */
-            height: 10rem; /* Equivalent to h-40 in Tailwind */
+            width: 5rem; /* w-20 */
+            height: 5rem; /* h-20 */
             position: relative;
             overflow: hidden;
         }
         #logo-img {
             position: absolute;
-            /* The image itself is larger than the container */
-            width: 12rem; /* w-48 */
-            height: 12rem; /* h-48 */
-            /* This shift crops the top and left edges */
-            top: -1.25rem; /* ~ -top-5 */
-            left: -1.25rem; /* ~ -left-5 */
+            width: 6rem; /* w-24 */
+            height: 6rem; /* h-24 */
+            top: -0.5rem; /* Adjusted for new size */
+            left: -0.5rem;  /* Adjusted for new size */
         }
     </style>
 </head>
 <body class="bg-neutral-900 text-neutral-100 font-sans flex justify-center items-start min-h-screen p-4 sm:p-8">
     <div class="max-w-4xl w-full">
-        <header class="flex justify-between items-center py-4">
-            <div class="-ml-12">
+        <header class="sticky top-0 z-10 bg-neutral-900 flex justify-between items-center py-2">
+            <div class="-ml-6">
                 <a href="/">
                     <div class="logo-container">
                         <img id="logo-img" src="assets/normal.png" alt="logo" class="pixel-art">
