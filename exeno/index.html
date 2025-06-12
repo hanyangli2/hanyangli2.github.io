@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exeno - Anonymous Connection App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        img {
+            border-radius: 8px;
+            max-width: 300px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body class="bg-neutral-900 text-neutral-200 min-h-screen">
+    <div class="max-w-3xl mx-auto px-6 py-12">
+        <h1 class="text-4xl font-semibold mb-8">exeno</h1>
+        
+        <div class="space-y-8">
+            <section>
+                <p class="text-neutral-400 leading-relaxed mb-6">
+                    anonymous connection app that allows users to privately select contacts from their address book, discovering mutual connections between two people without premature disclosure of identities.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-semibold mb-4">core concept</h2>
+                <p class="text-neutral-400 leading-relaxed">
+                    the premise of exeno is to facilitate connections between individuals who have a pre-existing, real-world relationship. a user can privately select a contact from their own address book. identities are only revealed to both parties if a mutual selection is made, resulting in a "match."
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-semibold mb-4">key features</h2>
+                <ul class="text-neutral-400 leading-relaxed list-disc pl-6 space-y-2">
+                    <li>anonymous selections: make a selection from your contact list without revealing your identity</li>
+                    <li>contact list integration: the app securely reads the device's contact list to enable users to make their selections</li>
+                    <li>mutual match reveals: identities are only revealed when two users have mutually selected each other</li>
+                    <li>secure backend: built on supabase for robust user authentication, data storage, and serverless functions</li>
+                    <li>user-initiated sms invitations: to notify a contact that they have been selected, the app facilitates sending a one-time sms invitation</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-semibold mb-4">sms flow</h2>
+                <p class="text-neutral-400 leading-relaxed mb-4">
+                    to ensure compliance and a positive user experience, the sms notification system follows a strict, user-initiated process:
+                </p>
+                <ol class="text-neutral-400 leading-relaxed list-decimal pl-6 space-y-2">
+                    <li>user selects a contact: the user navigates their contact list within the app and chooses a person to select</li>
+                    <li>explicit user consent: before any message is sent, the app presents a confirmation dialog</li>
+                    <li>user confirms action: the user must affirmatively tap "confirm" to authorize the sending of the sms</li>
+                    <li>one-time invitation sent: a single, anonymous sms is sent to the recipient</li>
+                    <li>opt-out included: every invitation sms includes mandatory language to allow the recipient to opt out</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-semibold mb-4">screenshots</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-neutral-400 mb-2">contact list</p>
+                        <img src="/docs/images/IMG_2605 (1).png" alt="Contact list screen" class="w-full">
+                    </div>
+                    <div>
+                        <p class="text-neutral-400 mb-2">preview screen</p>
+                        <img src="/docs/images/IMG_2608.png" alt="Preview screen" class="w-full">
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-semibold mb-4">tech stack</h2>
+                <ul class="text-neutral-400 leading-relaxed list-disc pl-6 space-y-2">
+                    <li>frontend: react native with expo</li>
+                    <li>state management: zustand</li>
+                    <li>backend-as-a-service: supabase (authentication, postgresql database, storage, edge functions)</li>
+                    <li>language: typescript</li>
+                </ul>
+            </section>
+
+            <section>
+                <h2 class="text-2xl font-semibold mb-4">status</h2>
+                <p class="text-neutral-400 leading-relaxed">
+                    exeno is currently under active development. the core features have been implemented, and the project is in the process of being configured for a production environment.
+                </p>
+            </section>
+        </div>
+    </div>
+</body>
+</html> 
