@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Apps - Hanyang Li</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        elegant: ['"Cormorant Garamond"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#f5e9db] text-neutral-900 font-elegant min-h-screen flex flex-col items-center justify-center p-6">
+    <main class="text-center max-w-2xl">
+        <!-- Header -->
+        <div class="mb-12">
+            <h1 class="text-2xl md:text-3xl font-light mb-2">Mobile Apps</h1>
+        </div>
+        
+        <!-- Apps List -->
+        <div class="space-y-8">
+            <!-- Ranked Social -->
+            <div class="group">
+                <a href="https://apps.apple.com/us/app/ranked-social-tier-lists/id6739509137?platform=iphone" target="_blank" rel="noopener noreferrer" class="block">
+                    <h2 class="text-xl md:text-2xl font-light mb-2 group-hover:text-neutral-600 transition-colors">Ranked Social</h2>
+                    <p class="text-neutral-600 text-sm md:text-base lowercase">create and share rankings</p>
+                </a>
+            </div>
+            
+            <!-- wavelet -->
+            <div class="group">
+                <a href="https://apps.apple.com/us/app/wavelet-audio-journal/id6747351228" target="_blank" rel="noopener noreferrer" class="block">
+                    <h2 class="text-xl md:text-2xl font-light mb-2 group-hover:text-neutral-600 transition-colors">wavelet</h2>
+                    <p class="text-neutral-600 text-sm md:text-base lowercase">capture audio memories</p>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Back Link -->
+        <div class="mt-16">
+            <a href="/" class="text-neutral-500 hover:text-neutral-900 transition-colors text-sm">← back</a>
+        </div>
+    </main>
+</body>
+</html> 

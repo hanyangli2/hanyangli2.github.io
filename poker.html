@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Poker - Hanyang Li</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        elegant: ['"Cormorant Garamond"', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-[#f5e9db] text-neutral-900 font-elegant min-h-screen flex flex-col items-center justify-center p-6">
+    <main class="text-center max-w-2xl">
+        <!-- Header -->
+        <div class="mb-12">
+            <h1 class="text-2xl md:text-3xl font-light mb-2">Poker</h1>
+        </div>
+        
+        <!-- Poker Content -->
+        <div class="space-y-6 text-neutral-700">
+            <p class="text-sm md:text-base lowercase">co-founded the <a href="https://www.uvapoker.club/" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-900 transition-colors underline">virginia poker club</a></p>
+            <p class="text-sm md:text-base lowercase">co-founded the university of virginia intercollegiate poker team</p>
+            <p class="text-sm md:text-base lowercase">building <a href="https://pokerguru.ai" target="_blank" rel="noopener noreferrer" class="hover:text-neutral-900 transition-colors underline">pokerguru.ai</a></p>
+        </div>
+        
+        <!-- Back Link -->
+        <div class="mt-16">
+            <a href="/" class="text-neutral-500 hover:text-neutral-900 transition-colors text-sm">← back</a>
+        </div>
+    </main>
+</body>
+</html> 
