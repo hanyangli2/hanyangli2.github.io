@@ -3,218 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harry Li</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        elegant: ['"Cormorant Garamond"', 'serif']
-                    }
-                }
-            }
-        }
-    </script>
-    <script defer src="/_vercel/insights/script.js"></script>
+    <title>Hanyang Li</title>
+    <link rel="icon" type="image/png" href="me.png">
     <style>
-        .scrolling-text {
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 16px;
-            color: rgba(115, 115, 115, 0.8);
-            white-space: nowrap;
-            position: absolute;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            background-color: #FDF4E9;
             display: flex;
-            width: fit-content;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
         }
-        
-        .scrolling-text a {
-            text-decoration: none;
-            color: inherit;
-            margin: 0 20px;
-            transition: color 0.3s ease;
-        }
-        
-        .scrolling-text a:hover {
-            color: rgba(115, 115, 115, 1);
-        }
-        
-        .scroll-left {
-            animation: scrollLeft 40s linear infinite;
-        }
-        
-        .scroll-right {
-            animation: scrollRight 40s linear infinite;
-        }
-        
-        @keyframes scrollLeft {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        
-        @keyframes scrollRight {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(0); }
-        }
-        
-        .scrolling-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            overflow: hidden;
-        }
-        
-        .text-content {
-            display: inline-block;
-        }
-        
-        .main-content {
+
+        .portrait-container {
             position: relative;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            padding: 2.5rem;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1),
-                        0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            display: inline-block;
+            margin-bottom: 30px;
         }
-        
-        /* Fallback for browsers that don't support backdrop-filter */
-        @supports not (backdrop-filter: blur(10px)) {
-            .main-content {
-                background: rgba(245, 233, 219, 0.85);
+
+        .portrait-image {
+            max-width: 500px;
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .hotspot {
+            position: absolute;
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+        }
+
+        /* Toggle this class on/off for debugging hotspot positions */
+        .debug-mode .hotspot:hover {
+            background: rgba(0, 123, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .hotspot:hover {
+            transform: scale(1.1);
+        }
+
+        .cursor-label {
+            position: fixed;
+            background: #333;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            transform: translate(-50%, -120%);
+        }
+
+        .cursor-label.visible {
+            opacity: 1;
+        }
+
+
+        /* Positioning for each hotspot based on the image */
+        .poker {
+            top: 30%;
+            left: 10%;
+            width: 86px;
+            height: 86px;
+        }
+
+        .bird {
+            top: 8%;
+            left: 15%;
+        }
+
+        .bird-2 {
+            top: 13%;
+            left: 20%;
+        }
+
+        .apple {
+            top: 3%;
+            right: 20%;
+        }
+
+        .cat {
+            top: 25%;
+            right: 10%;
+            width: 86px;
+            height: 86px;
+        }
+
+        .notebook {
+            top: 45%;
+            right: 15%;
+            width: 86px;
+            height: 86px;
+        }
+
+        .linkedin {
+            top: 25%;
+            left: 35%;
+            width: 30%;
+            height: 75%;
+            border-radius: 0;
+        }
+
+        .linkedin-2 {
+            top: 60%;
+            left: 22.5%;
+            width: 50%;
+            height: 40%;
+            border-radius: 0;
+        }
+
+        .info {
+            text-align: center;
+        }
+
+        .name {
+            font-size: 48px;
+            font-weight: 300;
+            color: #333;
+            margin-bottom: 10px;
+            letter-spacing: -1px;
+        }
+
+        .title {
+            font-size: 18px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .nav-index {
+            margin-top: 20px;
+            font-size: 13px;
+            color: #999;
+            letter-spacing: 0.5px;
+            font-weight: 400;
+        }
+
+        .nav-index a {
+            color: #999;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-variant-numeric: oldstyle-nums;
+        }
+
+        .nav-index a:hover {
+            color: #555;
+        }
+
+        @media (max-width: 600px) {
+            .portrait-image {
+                max-width: 350px;
+            }
+
+            .name {
+                font-size: 36px;
+            }
+
+            .title {
+                font-size: 16px;
+            }
+
+            .hotspot {
+                width: 60px;
+                height: 60px;
+            }
+
+            .linkedin {
+                width: 35%;
+                height: 60%;
             }
         }
     </style>
 </head>
-<body class="bg-[#f5e9db] text-neutral-900 font-elegant min-h-screen flex flex-col items-center justify-center p-6">
-    <!-- Scrolling Background -->
-    <div class="scrolling-background">
-        <div class="scrolling-text scroll-left" style="top: 5%;">
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-right" style="top: 15%;">
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-left" style="top: 25%;">
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-right" style="top: 35%;">
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-left" style="top: 45%;">
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-right" style="top: 55%;">
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-left" style="top: 65%;">
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-right" style="top: 75%;">
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-left" style="top: 85%;">
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-            <div class="text-content">
-                <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="mobile-apps.html">mobile</a> and <a href="poker.html">poker</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="research.html">research</a> and 
-            </div>
-        </div>
-        <div class="scrolling-text scroll-right" style="top: 95%;">
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
-            <div class="text-content">
-                <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and <a href="research.html">research</a> and <a href="https://github.com/hanyangli2" target="_blank">github</a> and <a href="poker.html">poker</a> and <a href="mobile-apps.html">mobile</a> and <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank">linkedin</a> and 
-            </div>
+<body>
+    <div class="portrait-container">
+        <img src="me.png" alt="Interactive portrait" class="portrait-image">
+
+        <!-- Interactive hotspots -->
+        <a href="poker.html" class="hotspot poker" data-label="poker"></a>
+
+        <a href="twitter.html" class="hotspot bird" data-label="twitter"></a>
+
+        <a href="twitter.html" class="hotspot bird-2" data-label="twitter"></a>
+
+        <a href="mobile-apps.html" class="hotspot apple" data-label="ios"></a>
+
+        <a href="https://github.com/hanyangli2" class="hotspot cat" data-label="github" target="_blank"></a>
+
+        <a href="writings.html" class="hotspot notebook" data-label="writings"></a>
+
+        <a href="https://linkedin.com/in/hanyangli2" class="hotspot linkedin" data-label="linkedin" target="_blank"></a>
+
+        <a href="https://linkedin.com/in/hanyangli2" class="hotspot linkedin-2" data-label="linkedin" target="_blank"></a>
+    </div>
+
+    <div class="info">
+        <h1 class="name">hanyang "harry"li</h1>
+        <p class="title">software engineer</p>
+        <div class="nav-index">
+            <a href="https://linkedin.com/in/hanyangli2" target="_blank">01 linkedin</a> ·
+            <a href="mobile-apps.html">02 ios</a> ·
+            <a href="writings.html">03 writings</a> ·
+            <a href="https://github.com/hanyangli2" target="_blank">04 github</a> ·
+            <a href="poker.html">05 poker</a> ·
+            <a href="twitter.html">06 twitter</a>
         </div>
     </div>
 
-    <main class="text-center main-content">
-        <!-- Name -->
-        <h1 class="text-2xl md:text-3xl font-light mb-2">HANYANG "HARRY" LI</h1>
-        
-        <!-- Tagline -->
-        <p class="text-neutral-600 text-sm md:text-base lowercase mb-8">building software</p>
-        
-        <!-- Icon navigation -->
-        <div class="flex flex-row justify-center gap-2 md:gap-4 items-center">
-            <a href="https://www.linkedin.com/in/hanyangli2/" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center p-2 cursor-pointer group">
-                <img src="assets/mannequin head.png" alt="LinkedIn" class="w-24 h-24 md:w-32 md:h-32 object-contain transition-all duration-300 group-hover:scale-110 group-hover:opacity-80" />
-            </a>
+    <!-- Floating cursor label -->
+    <div class="cursor-label" id="cursorLabel"></div>
 
-            <a href="mobile-apps.html" class="flex items-center justify-center p-2 cursor-pointer group">
-                <img src="assets/apple.png" alt="Mobile Apps" class="w-24 h-24 md:w-32 md:h-32 object-contain transition-all duration-300 group-hover:scale-110 group-hover:opacity-80" />
-            </a>
+    <script>
+        const cursorLabel = document.getElementById('cursorLabel');
 
-            <a href="poker.html" class="flex items-center justify-center p-2 cursor-pointer group">
-                <img src="assets/pokerchip.png" alt="Poker" class="w-24 h-24 md:w-32 md:h-32 object-contain transition-all duration-300 group-hover:scale-110 group-hover:opacity-80" />
-            </a>
+        document.querySelectorAll('.hotspot').forEach(hotspot => {
+            hotspot.addEventListener('mouseenter', (e) => {
+                document.body.style.cursor = 'none';
+                cursorLabel.textContent = hotspot.getAttribute('data-label');
+                cursorLabel.classList.add('visible');
+            });
 
-            <a href="https://github.com/hanyangli2" target="_blank" rel="noopener noreferrer" class="flex items-center justify-center p-2 cursor-pointer group">
-                <img src="assets/cat.png" alt="GitHub" class="w-24 h-24 md:w-32 md:h-32 object-contain transition-opacity duration-300 group-hover:opacity-80" style="transform: scaleX(-1) scale(1); transition: transform 0.3s ease, opacity 0.3s ease;" onmouseover="this.style.transform='scaleX(-1) scale(1.1)'" onmouseout="this.style.transform='scaleX(-1) scale(1)'" />
-            </a>
+            hotspot.addEventListener('mouseleave', (e) => {
+                document.body.style.cursor = 'default';
+                cursorLabel.classList.remove('visible');
+            });
 
-            <a href="research.html" class="flex items-center justify-center p-2 cursor-pointer group">
-                <img src="assets/alchemy%20jar.png" alt="Research" class="w-24 h-24 md:w-32 md:h-32 object-contain transition-all duration-300 group-hover:scale-110 group-hover:opacity-80" />
-            </a>
-        </div>
-        
-        <!-- Contact Info -->
-        <div class="mt-8 text-xs md:text-sm text-neutral-600 space-y-1">
-            <p>hanyangli003 [at] gmail [dot] com</p>
-            <p>+1 (804) 833-3821</p>
-        </div>
-    </main>
+            hotspot.addEventListener('mousemove', (e) => {
+                cursorLabel.style.left = e.clientX + 'px';
+                cursorLabel.style.top = e.clientY + 'px';
+            });
+        });
+    </script>
 </body>
-</html> 
+</html>

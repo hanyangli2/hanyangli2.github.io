@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flowing Text Animation</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: linear-gradient(135deg, #f5f5f0 0%, #e8e6e0 100%);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .text-element {
+            position: absolute;
+            color: #2c5aa0;
+            font-weight: normal;
+            transition: all 0.3s ease;
+            user-select: none;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .title {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">
+            Radium of<br>
+            <span style="color: #2c5aa0;">A Poetics of</span><br>
+            the Word
+        </div>
+        <div id="textFlow"></div>
+    </div>
+
+    <script>
+        class FlowingText {
+            constructor() {
+                this.container = document.getElementById('textFlow');
+                this.textContent = "materiality flows through words like water through stone, each letter a droplet in the stream of meaning, cascading down the page in gentle curves, smaller and smaller, until silence";
+                this.elements = [];
+                this.time = 0;
+
+                this.init();
+                this.animate();
+            }
+
+            init() {
+                const words = this.textContent.split(' ');
+                const totalElements = words.length;
+
+                words.forEach((word, index) => {
+                    const element = document.createElement('span');
+                    element.className = 'text-element';
+                    element.textContent = word;
+
+                    // Calculate position along a flowing curve
+                    const progress = index / totalElements;
+                    const baseX = window.innerWidth * 0.3 + progress * window.innerWidth * 0.4;
+                    const baseY = window.innerHeight * 0.2 + progress * window.innerHeight * 0.6;
+
+                    // Font size decreases along the flow
+                    const fontSize = Math.max(12, 32 - progress * 24);
+                    element.style.fontSize = fontSize + 'px';
+
+                    // Opacity decreases slightly
+                    const opacity = Math.max(0.4, 1 - progress * 0.6);
+                    element.style.opacity = opacity;
+
+                    // Store initial position and raindrop properties
+                    element.dataset.baseX = baseX;
+                    element.dataset.baseY = baseY;
+                    element.dataset.index = index;
+                    element.dataset.progress = progress;
+
+                    // Random properties for raindrop-like movement
+                    element.dataset.randomSeed = Math.random() * 1000;
+                    element.dataset.driftSpeed = 0.3 + Math.random() * 0.7;
+                    element.dataset.currentX = baseX;
+                    element.dataset.currentY = baseY;
+                    element.dataset.velocityX = (Math.random() - 0.5) * 0.8;
+                    element.dataset.velocityY = Math.random() * 0.5;
+                    element.dataset.pause = Math.random() * 60;
+                    element.dataset.pauseCounter = 0;
+
+                    this.container.appendChild(element);
+                    this.elements.push(element);
+                });
+            }
+
+            animate() {
+                this.time += 0.016;
+
+                this.elements.forEach((element, index) => {
+                    const baseX = parseFloat(element.dataset.baseX);
+                    const baseY = parseFloat(element.dataset.baseY);
+                    const randomSeed = parseFloat(element.dataset.randomSeed);
+                    const driftSpeed = parseFloat(element.dataset.driftSpeed);
+
+                    let currentX = parseFloat(element.dataset.currentX);
+                    let currentY = parseFloat(element.dataset.currentY);
+                    let velocityX = parseFloat(element.dataset.velocityX);
+                    let velocityY = parseFloat(element.dataset.velocityY);
+                    let pauseCounter = parseFloat(element.dataset.pauseCounter);
+                    const pauseDuration = parseFloat(element.dataset.pause);
+
+                    // Pause mechanism - some drops pause like hitting surface tension
+                    if (pauseCounter > 0) {
+                        pauseCounter -= 1;
+                        element.dataset.pauseCounter = pauseCounter;
+
+                        // Gentle trembling during pause
+                        const trembleX = Math.sin(this.time * 8 + randomSeed) * 0.5;
+                        const trembleY = Math.cos(this.time * 12 + randomSeed) * 0.3;
+
+                        element.style.left = (currentX + trembleX) + 'px';
+                        element.style.top = (currentY + trembleY) + 'px';
+                        return;
+                    }
+
+                    // Random direction changes (like hitting obstacles on window)
+                    if (Math.random() < 0.02) {
+                        velocityX += (Math.random() - 0.5) * 0.5;
+                        velocityY += Math.random() * 0.3;
+
+                        // Sometimes pause after direction change
+                        if (Math.random() < 0.3) {
+                            element.dataset.pauseCounter = 20 + Math.random() * 40;
+                        }
+                    }
+
+                    // Gravity-like downward drift
+                    velocityY += 0.008 * driftSpeed;
+
+                    // Wind resistance and random turbulence
+                    velocityX *= 0.98;
+                    velocityY *= 0.995;
+
+                    // Random micro-movements
+                    velocityX += (Math.random() - 0.5) * 0.05;
+                    velocityY += (Math.random() - 0.5) * 0.02;
+
+                    // Apply velocity
+                    currentX += velocityX;
+                    currentY += velocityY;
+
+                    // Keep elements roughly in bounds with soft boundaries
+                    if (currentX < 0 || currentX > window.innerWidth) {
+                        velocityX *= -0.3;
+                        currentX = Math.max(0, Math.min(window.innerWidth, currentX));
+                    }
+
+                    if (currentY > window.innerHeight) {
+                        // Reset to top with new random position
+                        currentY = -50;
+                        currentX = baseX + (Math.random() - 0.5) * 200;
+                        velocityX = (Math.random() - 0.5) * 0.8;
+                        velocityY = Math.random() * 0.5;
+                    }
+
+                    // Update stored values
+                    element.dataset.currentX = currentX;
+                    element.dataset.currentY = currentY;
+                    element.dataset.velocityX = velocityX;
+                    element.dataset.velocityY = velocityY;
+
+                    // Apply position
+                    element.style.left = currentX + 'px';
+                    element.style.top = currentY + 'px';
+
+                    // Subtle rotation based on velocity direction
+                    const rotation = Math.atan2(velocityY, velocityX) * (180 / Math.PI) * 0.1;
+                    element.style.transform = `rotate(${rotation}deg)`;
+                });
+
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            new FlowingText();
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>
