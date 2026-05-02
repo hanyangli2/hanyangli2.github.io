@@ -443,8 +443,18 @@
 
         @media (max-width: 600px) {
             .portrait-container { width: 380px; max-width: 90vw; }
-            .sheet { padding: 40px 28px; min-height: 78vh; }
+            .sheet {
+                padding: 40px 28px;
+                min-height: 70vh;
+                max-height: 80vh;
+            }
             .sheet h1 { font-size: 24px; }
+
+            /* Shift the world up so back links don't sit under the iOS
+               Safari bottom toolbar / home indicator. */
+            .world {
+                top: calc(42% - env(safe-area-inset-bottom, 0px) / 2);
+            }
 
             /* Push other papers off-screen on mobile — the peek effect
                doesn't work when the home paper already fills the viewport. */
