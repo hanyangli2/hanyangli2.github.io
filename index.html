@@ -27,18 +27,15 @@
 
         body {
             font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: #b88a55;
-            background-image: url('assets/desk.jpeg');
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
+            background-color: #6b4c2a;
             min-height: 100vh;
             perspective: 1400px;
             perspective-origin: 50% 30%;
         }
 
-        /* The world holds every paper. Translating it is the camera pan. */
+        /* The world holds the desk surface and every paper. Translating it
+           is the camera pan — the desk slides with the papers, sustaining
+           the illusion that the papers are physically on the desk. */
         .world {
             position: fixed;
             top: 50%;
@@ -47,6 +44,22 @@
             height: 0;
             transition: transform var(--pan-duration) var(--pan-easing);
             will-change: transform;
+        }
+
+        /* Big tiled wood surface centered on world origin. Sized large
+           enough that the camera never pans off it. */
+        .desk {
+            position: absolute;
+            top: -300vh;
+            left: -300vw;
+            width: 600vw;
+            height: 600vh;
+            background-image: url('assets/desk.jpeg');
+            background-repeat: repeat;
+            background-size: 140vmax auto;
+            background-position: center center;
+            z-index: 0;
+            pointer-events: none;
         }
 
         /* Papers scattered on the desk — placed close enough that their
@@ -472,6 +485,8 @@
 </head>
 <body data-page="home">
     <div class="world">
+
+        <div class="desk"></div>
 
         <!-- Home paper -->
         <div class="paper paper-home active">
