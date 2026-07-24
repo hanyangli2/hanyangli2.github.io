@@ -6,15 +6,21 @@
     <title>Writings - Hanyang Li</title>
     <link rel="icon" type="image/png" href="header.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'HarryHand';
+            src: url('assets/fonts/HarryHand-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        elegant: ['"Times New Roman"', 'Times', 'serif']
+                        elegant: ['HarryHand', 'serif']
                     }
                 }
             }
@@ -33,26 +39,26 @@
         <div class="space-y-8">
             <!-- Essay 1 -->
             <div class="group">
+                <a href="liking-something-essay.html" class="block">
+                    <h2 class="text-xl md:text-2xl font-light mb-2 group-hover:text-neutral-600 transition-colors">patchwork of one's self</h2>
+                </a>
+            </div>
+            <!-- Essay 2 -->
+            <div class="group">
                 <a href="the-carousel.html" class="block">
                     <h2 class="text-xl md:text-2xl font-light mb-2 group-hover:text-neutral-600 transition-colors">the carousel</h2>
                 </a>
             </div>
-            <!-- Essay 2 -->
+            <!-- Essay 3 -->
             <div class="group">
                 <a href="surveiled.html" class="block">
                     <h2 class="text-xl md:text-2xl font-light mb-2 group-hover:text-neutral-600 transition-colors">surveiled</h2>
                 </a>
             </div>
-            <!-- Essay 2 -->
+            <!-- Essay 4 -->
             <div class="group">
                 <a href="i-will-be-goop.html" class="block">
                     <h2 class="text-xl md:text-2xl font-light mb-2 group-hover:text-neutral-600 transition-colors">i will be goop</h2>
-                </a>
-            </div>
-            <!-- Essay 3 -->
-            <div class="group">
-                <a href="liking-something-essay.html" class="block">
-                    <h2 class="text-xl md:text-2xl font-light mb-2 group-hover:text-neutral-600 transition-colors">patchwork of one's self</h2>
                 </a>
             </div>
         </div>

@@ -6,15 +6,21 @@
     <title>patchwork of one's self - Hanyang Li</title>
     <link rel="icon" type="image/png" href="header.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'HarryHand';
+            src: url('assets/fonts/HarryHand-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        elegant: ['"Times New Roman"', 'Times', 'serif']
+                        elegant: ['HarryHand', 'serif']
                     }
                 }
             }
