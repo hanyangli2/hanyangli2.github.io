@@ -510,7 +510,6 @@
            doodle's id, so the scatter is identical for every visitor. */
         .doodle {
             position: absolute;
-            transition: transform 0.2s ease;
             width: var(--dw, 20%);
             left: var(--dx, 0%);
             top: var(--dy, 0px);
@@ -524,12 +523,9 @@
             overflow: visible;
         }
 
-        /* Who drew it and when surfaces on hover instead of sitting under
-           every doodle — the board stays a wall of drawings. */
-        .doodle:hover {
-            transform: rotate(var(--dr, 0deg)) scale(1.04);
-            z-index: 5;
-        }
+        /* Deliberately no hover styling: a doodle isn't a link, and growing it
+           on hover read as clickable. Who drew it and when still surfaces in
+           the cursor label. */
 
         .doodle.fresh {
             animation: doodle-pin 0.5s cubic-bezier(0.4, 1.5, 0.5, 1) both;
