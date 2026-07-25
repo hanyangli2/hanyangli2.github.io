@@ -1,10 +1,12 @@
 const { sanitizeEvent } = require('./_lib/sanitize');
 const { deviceFromUa, osFromUa, geoFromHeaders } = require('./_lib/ua');
+const { trafficSource } = require('./_lib/referrer');
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://ypsmbieyrilvruiivhdu.supabase.co').replace(/\/$/, '');
 const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwc21iaWV5cmlsdnJ1aWl2aGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgyMDUsImV4cCI6MjA2NTQxNDIwNX0.KIF9sokSNOhjCAQhUhopD9Wfl55TlN_NDcINWdALFSw').trim();
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 const ANALYTICS_PASSWORD = (process.env.ANALYTICS_PASSWORD || '').trim();
+const SITE_HOSTS = ['harryliwastaken.com', 'harryli.xyz', 'www.harryliwastaken.com', 'www.harryli.xyz'];
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -72,13 +74,13 @@ async function supabaseSelect(sinceIso) {
     });
   };
 
-  const full = 'id,created_at,name,props,path,session_id,country,city,device,os';
+  const full = 'id,created_at,name,props,path,session_id,referrer,country,city,device,os';
   const res = await run(full);
   if (res.ok) return res;
 
   const text = await res.text();
   if (text.includes('42703') || text.includes('does not exist')) {
-    return run('id,created_at,name,props,path,session_id');
+    return run('id,created_at,name,props,path,session_id,referrer');
   }
 
   return {
@@ -109,6 +111,7 @@ function summarize(rows) {
   const countrySessions = {};
   const deviceSessions = {};
   const osSessions = {};
+  const referrerSessions = {};
   const sessions = new Set();
   const daysMap = {};
 
@@ -127,6 +130,7 @@ function summarize(rows) {
     addVisitor(countrySessions, row.country);
     addVisitor(deviceSessions, row.device);
     addVisitor(osSessions, row.os);
+    addVisitor(referrerSessions, trafficSource(row, SITE_HOSTS));
 
     if (row.name === 'paper_open' && row.props && row.props.paper) {
       bump(byPaper, row.props.paper);
@@ -150,8 +154,12 @@ function summarize(rows) {
     byCountry: sessionCounts(countrySessions),
     byDevice: sessionCounts(deviceSessions),
     byOs: sessionCounts(osSessions),
+    byReferrer: sessionCounts(referrerSessions),
     daily: daysMap,
-    recent: rows.slice(0, 50),
+    recent: rows.slice(0, 50).map((row) => ({
+      ...row,
+      source: trafficSource(row, SITE_HOSTS),
+    })),
   };
 }
 

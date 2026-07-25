@@ -25,7 +25,9 @@ export function trackEvent(name, data) {
     name,
     props: data && typeof data === 'object' ? data : {},
     session_id: sessionId(),
-    path: typeof location !== 'undefined' ? location.pathname + location.hash : null,
+    path: typeof location !== 'undefined'
+      ? location.pathname + location.search + location.hash
+      : null,
     referrer: typeof document !== 'undefined' ? document.referrer || null : null,
     ua: typeof navigator !== 'undefined' ? navigator.userAgent : null,
   };

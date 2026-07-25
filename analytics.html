@@ -171,6 +171,10 @@
             <p class="hint">events per day</p>
             <div class="chart-wrap" id="daily-chart"></div>
 
+            <h2>how they found you</h2>
+            <p class="hint">unique sessions by referrer (x, linkedin, google, direct…)</p>
+            <div id="referrer-bars"></div>
+
             <h2>where they're from</h2>
             <p class="hint">unique sessions by country (Vercel edge · no raw IP stored)</p>
             <div id="country-bars"></div>
@@ -198,7 +202,7 @@
 
             <h2>recent</h2>
             <table>
-                <thead><tr><th>when</th><th>event</th><th>where</th><th>device</th><th>props</th></tr></thead>
+                <thead><tr><th>when</th><th>event</th><th>where</th><th>device</th><th>from</th><th>props</th></tr></thead>
                 <tbody id="recent"></tbody>
             </table>
 
@@ -361,6 +365,7 @@
             document.getElementById('essays').textContent = data.byName.essay_open || 0;
 
             renderDailyChart(data.daily, data.days);
+            renderBars(data.byReferrer, document.getElementById('referrer-bars'));
             renderBars(data.byCountry, document.getElementById('country-bars'));
             renderBars(data.byDevice, document.getElementById('device-bars'));
             renderBars(data.byOs, document.getElementById('os-bars'));
@@ -374,14 +379,16 @@
                 const props = row.props ? JSON.stringify(row.props) : '';
                 const where = [row.city, row.country].filter(Boolean).join(', ') || '—';
                 const device = [row.device, row.os].filter(Boolean).join(' · ') || '—';
+                const source = row.source || 'direct';
                 return `<tr>
                     <td>${escapeHtml(when)}</td>
                     <td><code>${escapeHtml(row.name)}</code></td>
                     <td>${escapeHtml(where)}</td>
                     <td>${escapeHtml(device)}</td>
+                    <td>${escapeHtml(source)}</td>
                     <td>${escapeHtml(props)}</td>
                 </tr>`;
-            }).join('') || '<tr><td colspan="5">none yet</td></tr>';
+            }).join('') || '<tr><td colspan="6">none yet</td></tr>';
 
             localStorage.setItem(KEY, password);
             gate.classList.add('hidden');
