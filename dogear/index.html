@@ -174,8 +174,19 @@
     animation: draw .6s ease-out .2s forwards;
   }
   @keyframes draw { to { stroke-dashoffset: 0; } }
-  @keyframes pop { to { transform: scale(1); } }
-  .tl-dot { transform-box: fill-box; transform-origin: center; transform: scale(0); animation: pop .4s cubic-bezier(.3,1.4,.5,1) forwards; }
+  @keyframes pop { to { transform: translate(-50%,-50%) scale(1); } }
+  /* Dots are positioned proportionally (not inside the SVG) so they stay locked
+     to the curve, which stretches with preserveAspectRatio="none". */
+  .tl-dots { position: absolute; inset: 0; }
+  .tl-dot {
+    position: absolute;
+    width: 10px; height: 10px; border-radius: 999px;
+    background: var(--note);
+    transform: translate(-50%,-50%) scale(0);
+    animation: pop .4s cubic-bezier(.3,1.4,.5,1) forwards;
+  }
+  .tl-dot.friend { background: transparent; border: 1.5px solid var(--note-friend); }
+  .tl-dot.sel { width: 13px; height: 13px; }
   .tl-pages { display: flex; justify-content: space-between; margin-top: 6px; font-size: 10px; font-weight: 300; color: var(--fg3); }
   .note-pop {
     margin: 14px auto 0;
@@ -324,6 +335,63 @@
   footer h2 em { font-style: italic; }
   footer > p { font-size: 14px; color: var(--fg2); margin-bottom: 24px; }
   footer .fine { font-size: 12px; color: var(--fg3); margin-top: 28px; }
+
+  /* ════════════ Tablet ════════════ */
+  @media (min-width: 680px) {
+    .page { max-width: 560px; }
+    h1 { font-size: 52px; }
+    .sec-head h2 { font-size: 36px; }
+    .cta-row { flex-direction: row; justify-content: center; align-items: center; gap: 24px; }
+  }
+
+  /* ════════════ Desktop ════════════ */
+  @media (min-width: 920px) {
+    .page { max-width: 1120px; padding: 0 56px; }
+
+    nav { padding: 30px 0 0; }
+    .wordmark { font-size: 30px; }
+    nav a { font-size: 14px; }
+
+    .hero { padding: 92px 0 76px; }
+    h1 { font-size: 68px; }
+    .hero p { font-size: 18px; max-width: 44ch; margin-top: 22px; }
+    .cta-row { margin: 40px 0 0; gap: 26px; }
+    .btn-primary { font-size: 15px; padding: 17px 40px; }
+    .btn-quiet { font-size: 14px; }
+
+    /* Feature sections pair the copy with its app mock, side by side. */
+    section.block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      column-gap: 72px;
+      padding: 100px 0;
+    }
+    .sec-head { text-align: left; margin-bottom: 0; }
+    .sec-head h2 { font-size: 44px; }
+    .sec-head p { font-size: 16px; max-width: 40ch; margin-left: 0; }
+    .app-mock { width: 100%; max-width: 430px; justify-self: center; }
+
+    /* Alternate which side the mock lands on so the page doesn't run down one rail. */
+    section.block:nth-of-type(2) .sec-head { order: 2; }
+
+    /* The rating flow reads as a sequence — give it the full width, screens in a row. */
+    section.block:nth-of-type(3) { display: block; }
+    section.block:nth-of-type(3) .sec-head { text-align: center; margin-bottom: 48px; }
+    section.block:nth-of-type(3) .sec-head p { margin-left: auto; margin-right: auto; }
+    .screens {
+      overflow: visible;
+      justify-content: center;
+      gap: 24px;
+      margin: 0;
+      padding: 0;
+    }
+    .screen-wrap { width: 304px; }
+
+    footer { padding: 100px 0 84px; }
+    footer h2 { font-size: 42px; }
+    footer > p { font-size: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -400,12 +468,14 @@
           <path d="M22,25 C43.5,25 43.5,10 65,10 C97.5,10 97.5,55 130,55 C162.5,55 162.5,40 195,40 C231,40 231,10 267,10 L267,40 L22,40 Z" fill="url(#sfill)"/>
           <!-- sentiment curve: cubic beziers, controls at midpoints -->
           <path class="tl-curve" pathLength="1" d="M22,25 C43.5,25 43.5,10 65,10 C97.5,10 97.5,55 130,55 C162.5,55 162.5,40 195,40 C231,40 231,10 267,10"/>
-          <circle class="tl-dot" style="animation-delay:.30s" cx="22"  cy="25" r="5" fill="#8B7355"/>
-          <circle class="tl-dot" style="animation-delay:.36s" cx="65"  cy="10" r="5" fill="#8B7355"/>
-          <circle class="tl-dot" style="animation-delay:.42s" cx="130" cy="55" r="6.5" fill="#8B7355"/>
-          <circle class="tl-dot" style="animation-delay:.48s" cx="195" cy="40" r="5" fill="none" stroke="#C4B7A3" stroke-width="1.5"/>
-          <circle class="tl-dot" style="animation-delay:.54s" cx="267" cy="10" r="5" fill="#8B7355"/>
         </svg>
+        <div class="tl-dots" aria-hidden="true">
+          <i class="tl-dot"        style="left:6.88%;  top:31.25%; animation-delay:.30s"></i>
+          <i class="tl-dot"        style="left:20.31%; top:12.5%;  animation-delay:.36s"></i>
+          <i class="tl-dot sel"    style="left:40.63%; top:68.75%; animation-delay:.42s"></i>
+          <i class="tl-dot friend" style="left:60.94%; top:50%;    animation-delay:.48s"></i>
+          <i class="tl-dot"        style="left:83.44%; top:12.5%;  animation-delay:.54s"></i>
+        </div>
       </div>
       <div class="tl-pages"><span>1</span><span>1,276</span></div>
 
