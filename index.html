@@ -78,6 +78,7 @@
         body[data-page="ios"]      .world { transform: translate(-72vw, 42vh); }
         body[data-page="poker"]    .world { transform: translate(-70vw, -52vh); }
         body[data-page="projects"] .world { transform: translate(64vw, -52vh); }
+        body[data-page="doodles"]  .world { transform: translate(-5vw, -106vh); }
 
         .paper {
             position: absolute;
@@ -96,6 +97,7 @@
         .paper-ios      { top: -42vh;   left:  72vw; }   /* upper-right */
         .paper-poker    { top:  52vh;   left:  70vw; }   /* lower-right */
         .paper-projects { top:  52vh;   left: -64vw; }   /* lower-left  */
+        .paper-doodles  { top: 106vh;   left:   5vw; }   /* straight down */
 
         /* ===== Home paper (the drawing) ===== */
 
@@ -284,7 +286,7 @@
 
         .email a:hover { color: #1a1a1a; }
 
-        /* Hint sits in the top-left of the home paper, like a margin note. */
+        /* Link sits in the top-left of the home paper, like a margin note. */
         .doodle-hint {
             position: absolute;
             top: 4%;
@@ -293,7 +295,12 @@
             color: #b8b8b8;
             font-style: italic;
             letter-spacing: 0.2px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s ease;
         }
+
+        .doodle-hint:hover { color: #1a1a1a; }
 
         .nav-index {
             font-size: clamp(9px, 1.96cqi, 12px);
@@ -462,6 +469,253 @@
 
         .writings-content { display: flex; flex: 1; flex-direction: column; }
 
+        /* ===== Doodle board =====
+           A wider sheet than the text papers, because it holds a collage.
+           The sheet scrolls internally so the paper can "get longer" without
+           breaking the fixed camera pan. */
+
+        .sheet-doodles {
+            width: min(780px, 92vw);
+            padding: 56px 44px 36px;
+        }
+
+        /* Doodles are absolutely placed by the scatter packer in JS — no
+           column or grid flow, so nothing fills in reading order. The height
+           is set in JS too, and it's what makes the paper grow. */
+        .board {
+            position: relative;
+            flex: 0 0 auto;
+            margin-top: 8px;
+        }
+
+        /* The board has no length limit, so the way out has to stay in reach
+           instead of sitting at the bottom of the scroll. */
+        .sheet-doodles .back {
+            position: sticky;
+            bottom: -36px;
+            padding: 16px 0 8px;
+            background: linear-gradient(to top, #fff 55%, rgba(255, 255, 255, 0));
+        }
+
+        .board-empty,
+        .board-status {
+            font-style: italic;
+            color: #999;
+            font-size: 14px;
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        /* Position and width come from the packer; rotation from a hash of the
+           doodle's id, so the scatter is identical for every visitor. */
+        .doodle {
+            position: absolute;
+            transition: transform 0.2s ease;
+            width: var(--dw, 20%);
+            left: var(--dx, 0%);
+            top: var(--dy, 0px);
+            transform: rotate(var(--dr, 0deg));
+        }
+
+        .doodle svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            overflow: visible;
+        }
+
+        /* Who drew it and when surfaces on hover instead of sitting under
+           every doodle — the board stays a wall of drawings. */
+        .doodle:hover {
+            transform: rotate(var(--dr, 0deg)) scale(1.04);
+            z-index: 5;
+        }
+
+        .doodle.fresh {
+            animation: doodle-pin 0.5s cubic-bezier(0.4, 1.5, 0.5, 1) both;
+        }
+
+        @keyframes doodle-pin {
+            0%   { opacity: 0; transform: rotate(var(--dr, 0deg)) scale(0.6) translateY(-14px); }
+            100% { opacity: 1; transform: rotate(var(--dr, 0deg)) scale(1) translateY(0); }
+        }
+
+        /* ===== "+" scrap, parked on the desk beside the board ===== */
+
+        .add-doodle {
+            position: fixed;
+            right: clamp(14px, 4vw, 40px);
+            bottom: calc(clamp(14px, 4vh, 40px) + env(safe-area-inset-bottom, 0px));
+            width: 62px;
+            height: 62px;
+            border: none;
+            background: #fffdf7;
+            color: #2b2622;
+            font-family: 'HarryHand', 'Times New Roman', Times, serif;
+            font-size: 30px;
+            line-height: 1;
+            cursor: pointer;
+            transform: rotate(-4deg);
+            box-shadow: 0 10px 22px rgba(40, 25, 10, 0.4),
+                        0 3px 6px rgba(40, 25, 10, 0.28);
+            z-index: 900;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease, transform 0.2s ease;
+        }
+
+        body[data-page="doodles"] .add-doodle {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .add-doodle:hover  { transform: rotate(-1deg) translateY(-2px); }
+        .add-doodle:active { transform: rotate(-4deg) translateY(1px); }
+
+        .add-doodle span {
+            display: block;
+            font-size: 9px;
+            font-style: italic;
+            color: #999;
+            margin-top: 1px;
+        }
+
+        /* ===== Drawing sheet (modal) ===== */
+
+        .draw-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(30, 20, 10, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+            padding: 16px;
+        }
+
+        .draw-overlay.open { display: flex; }
+
+        .draw-sheet {
+            background: #ffffff;
+            padding: 22px;
+            box-shadow: 0 26px 60px rgba(20, 12, 4, 0.5);
+            transform: rotate(-0.8deg);
+            max-height: 96vh;
+            overflow-y: auto;
+        }
+
+        .draw-sheet h2 {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.22em;
+            text-transform: uppercase;
+            color: #1a1a1a;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 16px;
+        }
+
+        /* Square by construction — the board assumes a 1:1 drawing. */
+        .draw-canvas {
+            display: block;
+            width: min(420px, 78vw, 60vh);
+            aspect-ratio: 1 / 1;
+            background: #fffdf7;
+            border: 1px solid #e6e2dc;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        .draw-tools {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 14px;
+        }
+
+        .swatch {
+            width: 26px;
+            height: 26px;
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            border-radius: 50%;
+            padding: 0;
+            cursor: pointer;
+            background: var(--c);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .swatch.selected {
+            transform: scale(1.22);
+            box-shadow: 0 0 0 2px #fff, 0 0 0 3px #1a1a1a;
+        }
+
+        .draw-tools .spacer { flex: 1; }
+
+        .txt-btn {
+            border: none;
+            background: none;
+            font-family: 'HarryHand', 'Times New Roman', Times, serif;
+            font-size: 12px;
+            letter-spacing: 0.06em;
+            color: #999;
+            cursor: pointer;
+            padding: 4px 2px;
+            transition: color 0.2s ease;
+        }
+
+        .txt-btn:hover:not(:disabled) { color: #1a1a1a; }
+        .txt-btn:disabled { opacity: 0.35; cursor: default; }
+
+        .draw-foot {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid #e6e2dc;
+        }
+
+        .draw-foot input {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            border-bottom: 1px solid #e6e2dc;
+            background: none;
+            font-family: 'HarryHand', 'Times New Roman', Times, serif;
+            font-size: 14px;
+            color: #1a1a1a;
+            padding: 4px 2px;
+            outline: none;
+        }
+
+        .draw-foot input:focus { border-bottom-color: #1a1a1a; }
+        .draw-foot input::placeholder { color: #c4c4c4; font-style: italic; }
+
+        .pin-btn {
+            border: 1px solid #1a1a1a;
+            background: #1a1a1a;
+            color: #fff;
+            font-family: 'HarryHand', 'Times New Roman', Times, serif;
+            font-size: 12px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .pin-btn:hover:not(:disabled) { opacity: 0.75; }
+        .pin-btn:disabled { opacity: 0.3; cursor: default; }
+
+        .draw-error {
+            font-size: 12px;
+            font-style: italic;
+            color: #c14a3a;
+            margin-top: 10px;
+            min-height: 1em;
+        }
+
         @media (max-width: 600px) {
             .portrait-container { width: 380px; max-width: 90vw; }
             .sheet {
@@ -483,11 +737,21 @@
             .paper-ios      { top: -100vh; left:  100vw; }
             .paper-poker    { top:  100vh; left:  100vw; }
             .paper-projects { top:  100vh; left: -100vw; }
+            .paper-doodles  { top:  100vh; left:     0;  }
 
             body[data-page="writings"] .world { transform: translate(100vw, 100vh); }
             body[data-page="ios"]      .world { transform: translate(-100vw, 100vh); }
             body[data-page="poker"]    .world { transform: translate(-100vw, -100vh); }
             body[data-page="projects"] .world { transform: translate(100vw, -100vh); }
+            body[data-page="doodles"]  .world { transform: translate(0, -100vh); }
+
+            .sheet-doodles { padding: 36px 20px 28px; }
+            .add-doodle { width: 54px; height: 54px; font-size: 26px; }
+            .draw-sheet { padding: 16px; }
+            /* Stack the footer so the name field isn't squeezed to nothing. */
+            .draw-foot { flex-wrap: wrap; }
+            .draw-foot input { flex-basis: 100%; margin-bottom: 6px; }
+            .draw-foot .spacer-grow { flex: 1; }
         }
     </style>
 </head>
@@ -508,7 +772,7 @@
                 <a href="#poker"     class="hotspot card"     data-label="poker"     data-pan="poker"></a>
                 <a href="#projects"  class="hotspot cat"      data-label="cool stuff" data-pan="projects"></a>
 
-                <div class="doodle-hint">click a doodle</div>
+                <a href="#doodles" class="doodle-hint" data-pan="doodles">doodle board</a>
 
                 <div class="info">
                     <div class="name">hanyang "harry" li</div>
@@ -666,6 +930,39 @@
             </div>
         </div>
 
+        <!-- Doodle board paper -->
+        <div class="paper paper-doodles">
+            <div class="sheet sheet-doodles sheet-rotate" style="--sheet-rx: 0.7deg;" id="board-sheet">
+                <h1>Doodle Board</h1>
+                <div class="board" id="board">
+                    <div class="board-status">loading the board…</div>
+                </div>
+                <div class="back"><a href="#" data-pan="home">← back to desk</a></div>
+            </div>
+        </div>
+
+    </div>
+
+    <button class="add-doodle" id="add-doodle" aria-label="add a doodle">+<span>draw</span></button>
+
+    <!-- Drawing sheet -->
+    <div class="draw-overlay" id="draw-overlay" role="dialog" aria-modal="true" aria-label="draw a doodle">
+        <div class="draw-sheet">
+            <h2>A Doodle</h2>
+            <canvas class="draw-canvas" id="draw-canvas"></canvas>
+            <div class="draw-tools" id="swatches">
+                <div class="spacer"></div>
+                <button class="txt-btn" id="undo-btn" disabled>undo</button>
+                <button class="txt-btn" id="clear-btn" disabled>clear</button>
+            </div>
+            <div class="draw-foot">
+                <input id="draw-name" type="text" maxlength="24" placeholder="your name (optional)" autocomplete="off">
+                <div class="spacer-grow"></div>
+                <button class="txt-btn" id="cancel-btn">cancel</button>
+                <button class="pin-btn" id="pin-btn" disabled>pin it up</button>
+            </div>
+            <div class="draw-error" id="draw-error"></div>
+        </div>
     </div>
 
     <div class="cursor-label" id="cursorLabel"></div>
@@ -688,7 +985,7 @@
         }
 
         // ===== Camera pan / hash routing =====
-        const PAGES = ['home', 'writings', 'ios', 'poker', 'projects'];
+        const PAGES = ['home', 'writings', 'ios', 'poker', 'projects', 'doodles'];
         const ESSAY_SLUGS = ['the-carousel', 'surveiled', 'i-will-be-goop', 'liking-something-essay'];
 
         function parseHash() {
@@ -703,6 +1000,11 @@
             document.querySelectorAll('.paper').forEach(p => {
                 p.classList.toggle('active', p.classList.contains('paper-' + page));
             });
+            // Panning away from the board dismisses the drawing sheet, so it
+            // can't hover over an unrelated paper.
+            if (page !== 'doodles') {
+                document.getElementById('draw-overlay').classList.remove('open');
+            }
         }
 
         // Show the writings list (default sub-view of writings paper).
@@ -784,6 +1086,8 @@
                 if (essay) showEssay(essay);
                 else showWritingsList();
             }
+            // The board's own state lives further down this script, so its
+            // first load is kicked off at the bottom of the file.
         })();
 
         // Click handler — essay links, back-to-writings links, and pan links
@@ -826,6 +1130,7 @@
                 }
                 setActivePaper(page);
                 if (page === 'writings') syncWritingsView();
+                if (page === 'doodles') loadBoard();
                 return;
             }
         });
@@ -838,6 +1143,7 @@
                 if (essay) showEssay(essay);
                 else showWritingsList();
             }
+            if (page === 'doodles') loadBoard();
         });
 
         // ===== Cursor label on hotspots =====
@@ -857,6 +1163,574 @@
                 cursorLabel.style.top = e.clientY + 'px';
             });
         });
+
+        // ===================================================================
+        // Doodle board
+        //
+        // Doodles are stored as normalized vector strokes (all coords in
+        // 0..1 within a square) rather than images, so one drawing renders
+        // crisply at any size on the board and the payload stays tiny.
+        // ===================================================================
+
+        const DB_URL = 'https://ypsmbieyrilvruiivhdu.supabase.co/rest/v1/doodles';
+        const DB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwc21iaWV5cmlsdnJ1aWl2aGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgyMDUsImV4cCI6MjA2NTQxNDIwNX0.KIF9sokSNOhjCAQhUhopD9Wfl55TlN_NDcINWdALFSw';
+        const DB_HEADERS = { apikey: DB_KEY, Authorization: 'Bearer ' + DB_KEY };
+
+        const PALETTE = ['#2b2622', '#c14a3a', '#3a6ea8', '#5c8a4a', '#d9a13b'];
+        const STROKE_W = 0.014;   // fraction of the square's width
+        const MAX_STROKES = 300;
+        const COOLDOWN_MS = 20000;
+
+        const boardEl = document.getElementById('board');
+
+        // --- geometry helpers ---------------------------------------------
+
+        // Small string hash → the per-doodle layout jitter. Derived from the
+        // id so the collage looks the same on every reload and for everyone.
+        function hash(str) {
+            let h = 2166136261;
+            for (let i = 0; i < str.length; i++) {
+                h ^= str.charCodeAt(i);
+                h = Math.imul(h, 16777619);
+            }
+            return (h >>> 0);
+        }
+
+        // Turn a point list into a smooth path by curving through midpoints.
+        function pathFrom(points) {
+            if (!points.length) return '';
+            if (points.length === 1) {
+                // A tap — draw a dot as a degenerate line.
+                const [x, y] = points[0];
+                return `M ${x} ${y} L ${x + 0.001} ${y}`;
+            }
+            let d = `M ${points[0][0]} ${points[0][1]}`;
+            for (let i = 1; i < points.length - 1; i++) {
+                const mx = (points[i][0] + points[i + 1][0]) / 2;
+                const my = (points[i][1] + points[i + 1][1]) / 2;
+                d += ` Q ${points[i][0]} ${points[i][1]} ${mx} ${my}`;
+            }
+            const last = points[points.length - 1];
+            d += ` L ${last[0]} ${last[1]}`;
+            return d;
+        }
+
+        // Everything arriving from the database is untrusted, so colors are
+        // snapped to the palette and coordinates clamped before they reach
+        // the DOM.
+        function sanitize(rows) {
+            return (Array.isArray(rows) ? rows : []).map(s => ({
+                c: PALETTE.includes(s && s.c) ? s.c : PALETTE[0],
+                w: Math.min(Math.max(Number(s && s.w) || STROKE_W, 0.004), 0.06),
+                p: (Array.isArray(s && s.p) ? s.p : [])
+                    .filter(pt => Array.isArray(pt) && pt.length === 2 &&
+                                  Number.isFinite(+pt[0]) && Number.isFinite(+pt[1]))
+                    .map(pt => [
+                        Math.min(Math.max(+pt[0], 0), 1),
+                        Math.min(Math.max(+pt[1], 0), 1)
+                    ])
+            })).filter(s => s.p.length);
+        }
+
+        // Crop the viewBox to the ink's bounding box. This is what keeps the
+        // board from reading as a grid: a wide scribble becomes a wide short
+        // tile, a tall one a tall tile, and dead margin never takes up space.
+        function buildDoodle(rows) {
+            const strokes = sanitize(rows);
+            if (!strokes.length) return null;
+
+            let x0 = 1, y0 = 1, x1 = 0, y1 = 0, pad = 0;
+            strokes.forEach(s => {
+                pad = Math.max(pad, s.w);
+                s.p.forEach(([x, y]) => {
+                    if (x < x0) x0 = x;
+                    if (x > x1) x1 = x;
+                    if (y < y0) y0 = y;
+                    if (y > y1) y1 = y;
+                });
+            });
+            pad = pad * 0.75 + 0.008;
+            x0 = Math.max(x0 - pad, 0);
+            y0 = Math.max(y0 - pad, 0);
+            x1 = Math.min(x1 + pad, 1);
+            y1 = Math.min(y1 + pad, 1);
+            const bw = Math.max(x1 - x0, 0.03);
+            const bh = Math.max(y1 - y0, 0.03);
+
+            const paths = strokes.map(s =>
+                `<path d="${pathFrom(s.p)}" fill="none" stroke="${s.c}" ` +
+                `stroke-width="${s.w}" stroke-linecap="round" stroke-linejoin="round"/>`
+            ).join('');
+
+            const r = n => n.toFixed(4);
+            return {
+                bw, bh,
+                svg: `<svg viewBox="${r(x0)} ${r(y0)} ${r(bw)} ${r(bh)}" ` +
+                     `xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${paths}</svg>`
+            };
+        }
+
+        // --- rendering ----------------------------------------------------
+
+        function doodleEl(row) {
+            const built = buildDoodle(row.strokes);
+            if (!built) return null;
+
+            const el = document.createElement('div');
+            el.className = 'doodle';
+
+            const h = hash(String(row.id));
+            el.style.setProperty('--dr', ((((h >> 8) % 90) / 10) - 4.5).toFixed(1) + 'deg');
+
+            el.innerHTML = built.svg;
+            // Read back out on hover. Kept in dataset (never innerHTML) so a
+            // name can't smuggle markup onto the page.
+            el.dataset.credit = creditFor(row);
+            return { el, row, built };
+        }
+
+        // ===================================================================
+        // Scatter packer
+        //
+        // A doodle board isn't a column flow — drawings go up wherever there's
+        // still room. Each doodle throws darts at the sheet until one lands in
+        // free space; if the sheet is full, it extends the bottom. The dart
+        // sequence comes from a fixed seed and doodles are packed oldest-first,
+        // so the scatter is the same for every visitor and pinning up a new
+        // one never shuffles the ones already there.
+        // ===================================================================
+
+        // All geometry is in units of 1% of the board's width, so a layout can
+        // be re-projected to pixels on resize without re-packing.
+        const SPAN = [20, 30, 42];   // base width per stored scale
+        const GAP = 2;               // clear space kept between doodles
+        const DARTS = 120;
+
+        function mulberry32(seed) {
+            return function () {
+                seed = seed + 0x6D2B79F5 | 0;
+                let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+                t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+                return ((t ^ t >>> 14) >>> 0) / 4294967296;
+            };
+        }
+
+        function hits(a, b) {
+            return a.x < b.x + b.w + GAP && b.x < a.x + a.w + GAP &&
+                   a.y < b.y + b.h + GAP && b.y < a.y + a.h + GAP;
+        }
+
+        // Squared centre distance — only ever compared, so no need for a sqrt.
+        function gapTo(a, b) {
+            const dx = (a.x + a.w / 2) - (b.x + b.w / 2);
+            const dy = (a.y + a.h / 2) - (b.y + b.h / 2);
+            return dx * dx + dy * dy;
+        }
+
+        // Narrow sheets get bigger doodles — a 20%-wide drawing is unreadable
+        // on a phone. Bucketed so the factor only changes at the breakpoint.
+        function spanBoost() {
+            return boardEl.clientWidth < 520 ? 1.9 : 1;
+        }
+
+        let packed = [];       // { el, x, y, w, h } in board-width units
+        let frontier = 0;      // bottom edge of everything placed so far
+        let openHeight = 0;    // sheet space to scatter across before growing
+        let dart = null;       // the shared dart sequence
+
+        // How much empty sheet is on show, in board-width units. A sparse board
+        // scatters across all of it instead of huddling along the top edge.
+        function visibleUnits(boardW) {
+            const sheet = document.getElementById('board-sheet');
+            if (!sheet) return 0;
+            const top = boardEl.getBoundingClientRect().top
+                      - sheet.getBoundingClientRect().top
+                      + sheet.scrollTop;
+            const back = 84;   // leave the sticky "back to desk" line clear
+            return Math.max(sheet.clientHeight - top - back, 0) / boardW * 100;
+        }
+
+        function packOne(entry) {
+            const scale = Math.min(Math.max(Number(entry.row.scale) || 0, 0), 2);
+            const w = Math.min(Math.max(SPAN[scale] * entry.built.bw * spanBoost(), 9), 68);
+            const h = w * (entry.built.bh / entry.built.bw);
+            const maxX = Math.max(100 - w, 0);
+            // Aim anywhere in the sheet on show; once that's full, anywhere in
+            // the taller board the doodles have grown it into.
+            const ceiling = Math.max(frontier, openHeight);
+
+            // Throw a fistful of darts and keep whichever lands furthest from
+            // everything already up. Uniform random alone clumps — two doodles
+            // would happily sit side by side and read as a row. Picking the
+            // roomiest dart spreads them out while keeping the irregularity.
+            let spot = null, best = -1;
+            for (let i = 0; i < DARTS; i++) {
+                const cand = {
+                    x: dart() * maxX,
+                    y: dart() * Math.max(ceiling - h, 0),
+                    w, h
+                };
+                if (packed.some(p => hits(cand, p))) continue;
+                if (!packed.length) { spot = cand; break; }
+                const room = Math.min(...packed.map(p => gapTo(cand, p)));
+                if (room > best) { best = room; spot = cand; }
+            }
+            // Sheet is full: pin it below everything, still at a random offset.
+            if (!spot) spot = { x: dart() * maxX, y: frontier + GAP, w, h };
+
+            const item = { el: entry.el, ...spot };
+            packed.push(item);
+            frontier = Math.max(frontier, spot.y + spot.h);
+            return item;
+        }
+
+        // Units → pixels. `top` has to be px because a percentage top would
+        // resolve against the board's height, which is what we're setting.
+        function project(item, boardW) {
+            item.el.style.setProperty('--dw', item.w.toFixed(2) + '%');
+            item.el.style.setProperty('--dx', item.x.toFixed(2) + '%');
+            item.el.style.setProperty('--dy', (item.y / 100 * boardW).toFixed(1) + 'px');
+        }
+
+        function applyLayout() {
+            const boardW = boardEl.clientWidth;
+            if (!boardW) return;
+            packed.forEach(item => project(item, boardW));
+            // Never shorter than the sheet on show, or a sparse board would
+            // collapse to a strip of paper.
+            const height = Math.max(frontier, openHeight);
+            boardEl.style.height = (height / 100 * boardW).toFixed(1) + 'px';
+        }
+
+        // Re-pack from scratch — used on first render and whenever the sheet
+        // crosses the width breakpoint that changes doodle sizes.
+        function repack(entries) {
+            const boardW = boardEl.clientWidth;
+            if (!boardW) return;
+            // Measured with the board collapsed, so the reading is the empty
+            // sheet's height rather than the height of the last layout.
+            boardEl.style.height = '0px';
+            openHeight = visibleUnits(boardW);
+
+            packed = [];
+            frontier = 0;
+            dart = mulberry32(0xd0d1e);
+            entries.forEach(packOne);
+            applyLayout();
+        }
+
+        // "herb · jul 25, 2026" — an unsigned doodle is anonymous, not blank.
+        function creditFor(row) {
+            const who = (row.name || '').trim() || 'anonymous';
+            const when = new Date(row.created_at);
+            if (isNaN(when)) return who;
+            const date = when.toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric'
+            }).toLowerCase();
+            return who + ' · ' + date;
+        }
+
+        let boardLoaded = false;
+        let entries = [];      // every doodle on the board, oldest first
+
+        async function loadBoard(force) {
+            if (boardLoaded && !force) return;
+            boardLoaded = true;
+            try {
+                // Oldest first, because that's the order the packer places in:
+                // a new doodle then slots into a gap without moving the rest.
+                const res = await fetch(
+                    DB_URL + '?select=id,strokes,name,scale,created_at&order=created_at.asc&limit=300',
+                    { headers: DB_HEADERS, cache: 'no-store' }
+                );
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const rows = await res.json();
+
+                entries = rows.map(doodleEl).filter(Boolean);
+                boardEl.innerHTML = '';
+                boardEl.style.height = '';
+                if (!entries.length) {
+                    boardEl.innerHTML = '<div class="board-empty">nothing pinned up yet — be the first</div>';
+                    return;
+                }
+                entries.forEach(e => boardEl.appendChild(e.el));
+                repack(entries);
+            } catch (err) {
+                boardLoaded = false;
+                boardEl.style.height = '';
+                boardEl.innerHTML = '<div class="board-status">the board could not load right now</div>';
+                console.error(err);
+            }
+        }
+
+        // Re-scatter when the sheet actually changes size. The key deliberately
+        // uses the viewport height rather than the sheet's, because the sheet
+        // grows with the board — keying off it would loop against applyLayout.
+        let sizeKey = '';
+        function relayout() {
+            if (!entries.length) return;
+            const key = boardEl.clientWidth + 'x' + window.innerHeight;
+            if (key === sizeKey) return;
+            sizeKey = key;
+            repack(entries);
+        }
+
+        new ResizeObserver(relayout).observe(boardEl);
+        window.addEventListener('resize', relayout);
+
+        // --- credit on hover ----------------------------------------------
+        // Reuses the desk's cursor label, so a doodle reads the same way as
+        // a hotspot on the home paper.
+
+        let tapTimer = null;
+
+        boardEl.addEventListener('mousemove', (e) => {
+            const d = e.target.closest('.doodle');
+            if (!d || !d.dataset.credit) {
+                cursorLabel.classList.remove('visible');
+                return;
+            }
+            cursorLabel.textContent = d.dataset.credit;
+            cursorLabel.style.left = e.clientX + 'px';
+            cursorLabel.style.top = e.clientY + 'px';
+            cursorLabel.classList.add('visible');
+        });
+
+        boardEl.addEventListener('mouseleave', () => {
+            cursorLabel.classList.remove('visible');
+        });
+
+        // Touch has no hover, so a tap flashes the credit instead.
+        boardEl.addEventListener('click', (e) => {
+            if (!window.matchMedia('(hover: none)').matches) return;
+            const d = e.target.closest('.doodle');
+            if (!d || !d.dataset.credit) return;
+            cursorLabel.textContent = d.dataset.credit;
+            cursorLabel.style.left = e.clientX + 'px';
+            cursorLabel.style.top = e.clientY + 'px';
+            cursorLabel.classList.add('visible');
+            clearTimeout(tapTimer);
+            tapTimer = setTimeout(() => cursorLabel.classList.remove('visible'), 1800);
+        });
+
+        // --- the drawing sheet --------------------------------------------
+
+        const overlay   = document.getElementById('draw-overlay');
+        const canvas    = document.getElementById('draw-canvas');
+        const ctx       = canvas.getContext('2d');
+        const undoBtn   = document.getElementById('undo-btn');
+        const clearBtn  = document.getElementById('clear-btn');
+        const pinBtn    = document.getElementById('pin-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+        const nameInput = document.getElementById('draw-name');
+        const errorEl   = document.getElementById('draw-error');
+        const swatchRow = document.getElementById('swatches');
+
+        let strokes = [];          // committed strokes, normalized 0..1
+        let current = null;        // stroke in progress
+        let color = PALETTE[0];
+        let cssSize = 0;           // canvas size in CSS px
+
+        const swatchSpacer = swatchRow.querySelector('.spacer');
+        PALETTE.forEach((c, i) => {
+            const b = document.createElement('button');
+            b.className = 'swatch' + (i === 0 ? ' selected' : '');
+            b.style.setProperty('--c', c);
+            b.dataset.color = c;
+            b.setAttribute('aria-label', 'color ' + (i + 1));
+            swatchRow.insertBefore(b, swatchSpacer);
+        });
+
+        swatchRow.addEventListener('click', (e) => {
+            const sw = e.target.closest('.swatch');
+            if (!sw) return;
+            color = sw.dataset.color;
+            swatchRow.querySelectorAll('.swatch').forEach(s => {
+                s.classList.toggle('selected', s === sw);
+            });
+        });
+
+        // Size the backing store to the device pixel ratio so lines are crisp.
+        function sizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            if (!rect.width) return;
+            cssSize = rect.width;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.round(rect.width * dpr);
+            canvas.height = Math.round(rect.width * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            redraw();
+        }
+
+        function drawStroke(s) {
+            const pts = s.p;
+            if (!pts.length) return;
+            ctx.strokeStyle = s.c;
+            ctx.lineWidth = s.w * cssSize;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            if (pts.length === 1) {
+                // Dot: a zero-length round-capped line.
+                ctx.moveTo(pts[0][0] * cssSize, pts[0][1] * cssSize);
+                ctx.lineTo(pts[0][0] * cssSize + 0.01, pts[0][1] * cssSize);
+            } else {
+                ctx.moveTo(pts[0][0] * cssSize, pts[0][1] * cssSize);
+                for (let i = 1; i < pts.length - 1; i++) {
+                    const mx = ((pts[i][0] + pts[i + 1][0]) / 2) * cssSize;
+                    const my = ((pts[i][1] + pts[i + 1][1]) / 2) * cssSize;
+                    ctx.quadraticCurveTo(pts[i][0] * cssSize, pts[i][1] * cssSize, mx, my);
+                }
+                const last = pts[pts.length - 1];
+                ctx.lineTo(last[0] * cssSize, last[1] * cssSize);
+            }
+            ctx.stroke();
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, cssSize, cssSize);
+            strokes.forEach(drawStroke);
+            if (current) drawStroke(current);
+        }
+
+        function syncButtons() {
+            const has = strokes.length > 0;
+            undoBtn.disabled = !has;
+            clearBtn.disabled = !has;
+            pinBtn.disabled = !has || pinBtn.dataset.busy === '1';
+        }
+
+        function pointAt(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clamp = v => Math.min(Math.max(v, 0), 1);
+            return [
+                +clamp((e.clientX - rect.left) / rect.width).toFixed(3),
+                +clamp((e.clientY - rect.top) / rect.height).toFixed(3)
+            ];
+        }
+
+        canvas.addEventListener('pointerdown', (e) => {
+            if (strokes.length >= MAX_STROKES) {
+                errorEl.textContent = 'that is a lot of strokes — try pinning it up';
+                return;
+            }
+            canvas.setPointerCapture(e.pointerId);
+            current = { c: color, w: STROKE_W, p: [pointAt(e)] };
+            redraw();
+        });
+
+        canvas.addEventListener('pointermove', (e) => {
+            if (!current) return;
+            const p = pointAt(e);
+            const last = current.p[current.p.length - 1];
+            // Skip near-duplicate points; keeps the stored payload small.
+            if (Math.abs(p[0] - last[0]) < 0.004 && Math.abs(p[1] - last[1]) < 0.004) return;
+            current.p.push(p);
+            redraw();
+        });
+
+        function endStroke() {
+            if (!current) return;
+            strokes.push(current);
+            current = null;
+            errorEl.textContent = '';
+            syncButtons();
+            redraw();
+        }
+
+        canvas.addEventListener('pointerup', endStroke);
+        canvas.addEventListener('pointercancel', endStroke);
+
+        undoBtn.addEventListener('click', () => { strokes.pop(); syncButtons(); redraw(); });
+        clearBtn.addEventListener('click', () => { strokes = []; syncButtons(); redraw(); });
+
+        function openDraw() {
+            strokes = [];
+            current = null;
+            errorEl.textContent = '';
+            pinBtn.dataset.busy = '0';
+            pinBtn.textContent = 'pin it up';
+            overlay.classList.add('open');
+            // Layout has to settle before the canvas can be measured.
+            requestAnimationFrame(sizeCanvas);
+            syncButtons();
+        }
+
+        function closeDraw() {
+            overlay.classList.remove('open');
+        }
+
+        document.getElementById('add-doodle').addEventListener('click', openDraw);
+        cancelBtn.addEventListener('click', closeDraw);
+        overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDraw(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && overlay.classList.contains('open')) closeDraw();
+        });
+        window.addEventListener('resize', () => {
+            if (overlay.classList.contains('open')) sizeCanvas();
+        });
+
+        pinBtn.addEventListener('click', async () => {
+            if (!strokes.length || pinBtn.dataset.busy === '1') return;
+
+            const last = Number(localStorage.getItem('doodle-last') || 0);
+            const wait = COOLDOWN_MS - (Date.now() - last);
+            if (wait > 0) {
+                errorEl.textContent = `hold on ${Math.ceil(wait / 1000)}s before the next one`;
+                return;
+            }
+
+            pinBtn.dataset.busy = '1';
+            pinBtn.disabled = true;
+            pinBtn.textContent = 'pinning…';
+            errorEl.textContent = '';
+
+            // Size is chosen once, at submit, so the doodle keeps the same
+            // footprint on the board for everybody.
+            const row = {
+                strokes,
+                name: nameInput.value.trim() || null,
+                scale: Math.floor(Math.random() * 3)
+            };
+
+            try {
+                const res = await fetch(DB_URL, {
+                    method: 'POST',
+                    headers: { ...DB_HEADERS, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+                    body: JSON.stringify(row)
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status + ' ' + await res.text());
+                const [saved] = await res.json();
+
+                localStorage.setItem('doodle-last', String(Date.now()));
+                closeDraw();
+
+                const empty = boardEl.querySelector('.board-empty, .board-status');
+                if (empty) empty.remove();
+
+                const entry = doodleEl(saved);
+                if (entry) {
+                    // Re-packing is prefix-stable: every doodle already up keeps
+                    // its exact spot, and the new one lands where everyone else
+                    // will see it too.
+                    entries.push(entry);
+                    boardEl.appendChild(entry.el);
+                    repack(entries);
+                    entry.el.classList.add('fresh');
+                    entry.el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                }
+            } catch (err) {
+                console.error(err);
+                errorEl.textContent = 'could not pin that up — try again';
+                pinBtn.dataset.busy = '0';
+                pinBtn.textContent = 'pin it up';
+                syncButtons();
+            }
+        });
+
+        // Deep link straight to #doodles — load now that the board's state
+        // above has been initialized.
+        if (document.body.dataset.page === 'doodles') loadBoard();
 
     </script>
 </body>
