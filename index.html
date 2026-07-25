@@ -776,6 +776,10 @@
             .draw-foot .spacer-grow { flex: 1; }
         }
     </style>
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script type="module" src="assets/track.js"></script>
     <script defer src="/_vercel/insights/script.js"></script>
 </head>
 <body data-page="home">
@@ -1014,6 +1018,17 @@
         const PAGES = ['home', 'writings', 'ios', 'poker', 'projects', 'doodles'];
         const ESSAY_SLUGS = ['the-carousel', 'surveiled', 'i-will-be-goop', 'liking-something-essay'];
 
+        // Prefer the shared helper; fall back to the va queue if the module
+        // hasn't assigned window.trackEvent yet (classic script can run first).
+        function track(name, data) {
+            if (typeof window.trackEvent === 'function') {
+                window.trackEvent(name, data);
+                return;
+            }
+            if (typeof window.va !== 'function') return;
+            window.va('event', data ? { name, data } : { name });
+        }
+
         function parseHash() {
             const h = (location.hash || '').replace('#', '').trim();
             const [page, essay] = h.split('/');
@@ -1022,6 +1037,7 @@
         }
 
         function setActivePaper(page) {
+            const prev = document.body.dataset.page;
             document.body.dataset.page = page;
             document.querySelectorAll('.paper').forEach(p => {
                 p.classList.toggle('active', p.classList.contains('paper-' + page));
@@ -1030,6 +1046,9 @@
             // can't hover over an unrelated paper.
             if (page !== 'doodles') {
                 document.getElementById('draw-overlay').classList.remove('open');
+            }
+            if (page !== prev) {
+                track('paper_open', { paper: page });
             }
         }
 
@@ -1044,6 +1063,8 @@
         // Fetch + render an essay inline within the writings paper.
         const essayCache = new Map();
         async function showEssay(slug) {
+            track('essay_open', { slug });
+
             const list = document.getElementById('writings-list');
             const view = document.getElementById('writings-essay');
             const titleEl = document.getElementById('essay-title');
@@ -1729,6 +1750,10 @@
                 const [saved] = await res.json();
 
                 localStorage.setItem('doodle-last', String(Date.now()));
+                track('doodle_submit', {
+                    strokeCount: strokes.length,
+                    named: Boolean(row.name)
+                });
                 closeDraw();
 
                 const empty = boardEl.querySelector('.board-empty, .board-status');
