@@ -1,26 +1,10 @@
 /**
- * Map a raw document.referrer URL to a short traffic source label.
+ * Map a raw document.referrer URL / utm_source to a short traffic source label.
  */
 
-function referrerSource(referrer, siteHosts = []) {
-  if (referrer == null || String(referrer).trim() === '') return 'direct';
-
-  let host;
-  try {
-    host = new URL(String(referrer)).hostname.toLowerCase();
-  } catch {
-    return 'other';
-  }
-
-  const bare = host.replace(/^www\./, '');
-  const own = new Set(
-    (siteHosts || [])
-      .filter(Boolean)
-      .map((h) => String(h).toLowerCase().replace(/^www\./, ''))
-  );
-  if (own.has(bare) || [...own].some((h) => bare.endsWith('.' + h))) {
-    return 'direct';
-  }
+function labelFromHost(host) {
+  const bare = String(host || '').toLowerCase().replace(/^www\./, '');
+  if (!bare) return 'direct';
 
   if (
     bare === 'x.com' ||
@@ -54,8 +38,56 @@ function referrerSource(referrer, siteHosts = []) {
     return 'youtube';
   }
   if (bare === 'threads.net' || bare.endsWith('.threads.net')) return 'threads';
-
   return bare;
 }
 
-module.exports = { referrerSource };
+function referrerSource(referrer, siteHosts = []) {
+  if (referrer == null || String(referrer).trim() === '') return 'direct';
+
+  let host;
+  try {
+    host = new URL(String(referrer)).hostname.toLowerCase();
+  } catch {
+    return 'other';
+  }
+
+  const bare = host.replace(/^www\./, '');
+  const own = new Set(
+    (siteHosts || [])
+      .filter(Boolean)
+      .map((h) => String(h).toLowerCase().replace(/^www\./, ''))
+  );
+  if (own.has(bare) || [...own].some((h) => bare.endsWith('.' + h))) {
+    return 'direct';
+  }
+
+  return labelFromHost(bare);
+}
+
+/** Fallback when referrer is stripped but the landing URL has utm_source. */
+function utmSource(path) {
+  if (!path || typeof path !== 'string' || !path.includes('utm_source=')) return null;
+  try {
+    const query = path.includes('?') ? path.slice(path.indexOf('?')).split('#')[0] : '';
+    const value = new URLSearchParams(query).get('utm_source');
+    if (!value) return null;
+    const raw = String(value).trim().toLowerCase();
+    if (!raw) return null;
+    if (raw === 'twitter' || raw === 'x') return 'x';
+    if (raw === 'li' || raw === 'linkedin') return 'linkedin';
+    if (raw === 'fb' || raw === 'facebook') return 'facebook';
+    if (raw === 'ig' || raw === 'instagram') return 'instagram';
+    if (raw === 'yt' || raw === 'youtube') return 'youtube';
+    return raw.slice(0, 32);
+  } catch {
+    return null;
+  }
+}
+
+function trafficSource({ referrer, path } = {}, siteHosts = []) {
+  const fromRef = referrerSource(referrer, siteHosts);
+  if (fromRef !== 'direct') return fromRef;
+  return utmSource(path) || 'direct';
+}
+
+module.exports = { referrerSource, utmSource, trafficSource, labelFromHost };
