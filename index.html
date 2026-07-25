@@ -776,9 +776,6 @@
             .draw-foot .spacer-grow { flex: 1; }
         }
     </style>
-    <script>
-        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-    </script>
     <script type="module" src="assets/track.js"></script>
     <script defer src="/_vercel/insights/script.js"></script>
 </head>
@@ -1018,15 +1015,13 @@
         const PAGES = ['home', 'writings', 'ios', 'poker', 'projects', 'doodles'];
         const ESSAY_SLUGS = ['the-carousel', 'surveiled', 'i-will-be-goop', 'liking-something-essay'];
 
-        // Prefer the shared helper; fall back to the va queue if the module
-        // hasn't assigned window.trackEvent yet (classic script can run first).
+        // Prefer the shared helper; queue if the module hasn't loaded yet.
         function track(name, data) {
             if (typeof window.trackEvent === 'function') {
                 window.trackEvent(name, data);
                 return;
             }
-            if (typeof window.va !== 'function') return;
-            window.va('event', data ? { name, data } : { name });
+            (window.__analyticsQ = window.__analyticsQ || []).push([name, data]);
         }
 
         function parseHash() {
@@ -1133,6 +1128,7 @@
                 if (essay) showEssay(essay);
                 else showWritingsList();
             }
+            track('page_view', { paper: page });
             // The board's own state lives further down this script, so its
             // first load is kicked off at the bottom of the file.
         })();

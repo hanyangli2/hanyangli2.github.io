@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>analytics</title>
+    <link rel="icon" type="image/png" href="header.png">
+    <style>
+        @font-face {
+            font-family: 'HarryHand';
+            src: url('assets/fonts/HarryHand-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+        :root {
+            --ink: #1a1a1a;
+            --mute: #6b6b6b;
+            --line: #e4dccf;
+            --bg: #f7f1e6;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: HarryHand, Georgia, serif;
+            background: var(--bg);
+            color: var(--ink);
+            padding: 32px 20px 64px;
+        }
+        main { max-width: 720px; margin: 0 auto; }
+        h1 { font-weight: normal; font-size: 2rem; margin: 0 0 8px; }
+        .sub { color: var(--mute); margin-bottom: 28px; }
+        .gate, .panel {
+            border-top: 1px solid var(--line);
+            padding-top: 20px;
+        }
+        label { display: block; margin-bottom: 8px; color: var(--mute); }
+        input {
+            width: min(320px, 100%);
+            font: inherit;
+            font-size: 1.1rem;
+            padding: 8px 0;
+            border: none;
+            border-bottom: 1px solid #bbb;
+            background: transparent;
+            outline: none;
+        }
+        button {
+            font: inherit;
+            font-size: 1rem;
+            margin-top: 16px;
+            padding: 8px 14px;
+            border: 1px solid #1a1a1a;
+            background: transparent;
+            cursor: pointer;
+        }
+        button:hover { background: #1a1a1a; color: #f7f1e6; }
+        .error { color: #a33; margin-top: 12px; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin: 20px 0 28px;
+        }
+        .stat {
+            border: 1px solid var(--line);
+            padding: 14px;
+        }
+        .stat .n { font-size: 1.8rem; line-height: 1; }
+        .stat .l { color: var(--mute); margin-top: 6px; }
+        h2 { font-weight: normal; font-size: 1.3rem; margin: 28px 0 10px; }
+        table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+        th, td { text-align: left; padding: 6px 0; border-bottom: 1px solid var(--line); }
+        th { color: var(--mute); font-weight: normal; }
+        .row { display: flex; justify-content: space-between; gap: 12px; }
+        .back { margin-top: 36px; }
+        .back a { color: var(--mute); text-decoration: none; }
+        .back a:hover { color: var(--ink); }
+        .hidden { display: none; }
+        code { font-family: ui-monospace, monospace; font-size: 0.85em; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>analytics</h1>
+        <p class="sub">first-party events · last <span id="days-label">30</span> days</p>
+
+        <section class="gate" id="gate">
+            <label for="password">password</label>
+            <input id="password" type="password" autocomplete="current-password">
+            <div>
+                <button id="unlock" type="button">unlock</button>
+            </div>
+            <p class="error hidden" id="gate-error"></p>
+        </section>
+
+        <section class="panel hidden" id="panel">
+            <div class="stats">
+                <div class="stat"><div class="n" id="total">0</div><div class="l">events</div></div>
+                <div class="stat"><div class="n" id="sessions">0</div><div class="l">sessions</div></div>
+                <div class="stat"><div class="n" id="pageviews">0</div><div class="l">page views</div></div>
+                <div class="stat"><div class="n" id="essays">0</div><div class="l">essay opens</div></div>
+            </div>
+
+            <h2>events</h2>
+            <table>
+                <thead><tr><th>name</th><th>count</th></tr></thead>
+                <tbody id="by-name"></tbody>
+            </table>
+
+            <h2>papers</h2>
+            <table>
+                <thead><tr><th>paper</th><th>opens</th></tr></thead>
+                <tbody id="by-paper"></tbody>
+            </table>
+
+            <h2>essays</h2>
+            <table>
+                <thead><tr><th>slug</th><th>opens</th></tr></thead>
+                <tbody id="by-essay"></tbody>
+            </table>
+
+            <h2>recent</h2>
+            <table>
+                <thead><tr><th>when</th><th>event</th><th>props</th></tr></thead>
+                <tbody id="recent"></tbody>
+            </table>
+
+            <div class="back">
+                <a href="index.html">← desk</a>
+                ·
+                <a href="#" id="signout">sign out</a>
+            </div>
+        </section>
+    </main>
+    <script>
+        const KEY = 'hl_analytics_pw';
+        const gate = document.getElementById('gate');
+        const panel = document.getElementById('panel');
+        const input = document.getElementById('password');
+        const err = document.getElementById('gate-error');
+
+        function rowsFromMap(map, tbody) {
+            const entries = Object.entries(map || {}).sort((a, b) => b[1] - a[1]);
+            tbody.innerHTML = entries.length
+                ? entries.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td>${v}</td></tr>`).join('')
+                : '<tr><td colspan="2">none yet</td></tr>';
+        }
+
+        function escapeHtml(s) {
+            return String(s)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;');
+        }
+
+        async function load(password) {
+            err.classList.add('hidden');
+            const res = await fetch('/api/analytics?days=30', {
+                headers: { Authorization: 'Bearer ' + password }
+            });
+            if (res.status === 401) throw new Error('wrong password');
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                throw new Error(body.error || 'failed to load');
+            }
+            const data = await res.json();
+            document.getElementById('days-label').textContent = data.days;
+            document.getElementById('total').textContent = data.totalEvents;
+            document.getElementById('sessions').textContent = data.uniqueSessions;
+            document.getElementById('pageviews').textContent = data.byName.page_view || 0;
+            document.getElementById('essays').textContent = data.byName.essay_open || 0;
+            rowsFromMap(data.byName, document.getElementById('by-name'));
+            rowsFromMap(data.byPaper, document.getElementById('by-paper'));
+            rowsFromMap(data.byEssay, document.getElementById('by-essay'));
+
+            const recent = document.getElementById('recent');
+            recent.innerHTML = (data.recent || []).map((row) => {
+                const when = new Date(row.created_at).toLocaleString();
+                const props = row.props ? JSON.stringify(row.props) : '';
+                return `<tr><td>${escapeHtml(when)}</td><td><code>${escapeHtml(row.name)}</code></td><td>${escapeHtml(props)}</td></tr>`;
+            }).join('') || '<tr><td colspan="3">none yet</td></tr>';
+
+            localStorage.setItem(KEY, password);
+            gate.classList.add('hidden');
+            panel.classList.remove('hidden');
+        }
+
+        document.getElementById('unlock').addEventListener('click', async () => {
+            try {
+                await load(input.value);
+            } catch (e) {
+                err.textContent = e.message || 'failed';
+                err.classList.remove('hidden');
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') document.getElementById('unlock').click();
+        });
+
+        document.getElementById('signout').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem(KEY);
+            panel.classList.add('hidden');
+            gate.classList.remove('hidden');
+            input.value = '';
+        });
+
+        const saved = localStorage.getItem(KEY);
+        if (saved) {
+            load(saved).catch(() => localStorage.removeItem(KEY));
+        }
+    </script>
+</body>
+</html>

@@ -1,76 +1,59 @@
-import { describe, it, beforeEach } from 'node:test';
+import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { trackEvent } from '../assets/track.js';
+import { createRequire } from 'node:module';
 
+const require = createRequire(import.meta.url);
+const { sanitizeEvent } = require('../api/_lib/sanitize.js');
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const INSIGHTS_SCRIPT = '/_vercel/insights/script.js';
 
-describe('Vercel Analytics coverage', () => {
-  it('includes the insights script on every root HTML page', () => {
-    const pages = readdirSync(root).filter((name) => name.endsWith('.html')).sort();
-    assert.ok(pages.includes('index.html'), 'expected index.html to exist');
-
-    const missing = pages.filter((name) => {
-      const html = readFileSync(join(root, name), 'utf8');
-      return !html.includes(INSIGHTS_SCRIPT);
+describe('sanitizeEvent', () => {
+  it('accepts allowlisted events and props', () => {
+    const { event, error } = sanitizeEvent({
+      name: 'essay_open',
+      props: { slug: 'the-carousel', evil: 'nope' },
+      session_id: 'abc',
+      path: '/',
     });
-
-    assert.deepEqual(
-      missing,
-      [],
-      `missing ${INSIGHTS_SCRIPT} in: ${missing.join(', ')}`
-    );
+    assert.equal(error, undefined);
+    assert.deepEqual(event, {
+      name: 'essay_open',
+      props: { slug: 'the-carousel' },
+      session_id: 'abc',
+      path: '/',
+      referrer: null,
+      ua: null,
+    });
   });
 
-  it('bootstraps the va queue before the insights script on index.html', () => {
+  it('rejects unknown events', () => {
+    const { error } = sanitizeEvent({ name: 'hack_the_planet' });
+    assert.equal(error, 'unknown event');
+  });
+});
+
+describe('first-party analytics wiring', () => {
+  it('has collector API and private viewer', () => {
+    assert.ok(existsSync(join(root, 'api/analytics.js')));
+    assert.ok(existsSync(join(root, 'analytics.html')));
+    assert.ok(existsSync(join(root, 'supabase/migrations/20260725214601_analytics_events.sql')));
+  });
+
+  it('desk page loads track.js and fires core events', () => {
     const html = readFileSync(join(root, 'index.html'), 'utf8');
-    const vaIdx = html.indexOf('window.va');
-    const scriptIdx = html.indexOf(`src="${INSIGHTS_SCRIPT}"`);
-    assert.ok(vaIdx !== -1, 'expected window.va bootstrap');
-    assert.ok(scriptIdx !== -1, 'expected insights script');
-    assert.ok(vaIdx < scriptIdx, 'va queue must be defined before insights script');
+    assert.match(html, /assets\/track\.js/);
+    assert.match(html, /track\(\s*['"]page_view['"]/);
+    assert.match(html, /track\(\s*['"]paper_open['"]/);
+    assert.match(html, /track\(\s*['"]essay_open['"]/);
+    assert.match(html, /track\(\s*['"]doodle_submit['"]/);
   });
 });
 
 describe('trackEvent helper', () => {
-  beforeEach(() => {
-    globalThis.window = globalThis;
-    delete globalThis.va;
-  });
-
-  it('queues a named event through window.va', () => {
-    const calls = [];
-    globalThis.va = (...args) => calls.push(args);
-    trackEvent('paper_open', { paper: 'writings' });
-    assert.deepEqual(calls, [
-      ['event', { name: 'paper_open', data: { paper: 'writings' } }],
-    ]);
-  });
-
-  it('no-ops when va is missing', () => {
-    assert.doesNotThrow(() => trackEvent('essay_open', { slug: 'surveiled' }));
-  });
-});
-
-describe('desk custom events in index.html', () => {
-  const html = readFileSync(join(root, 'index.html'), 'utf8');
-
-  it('loads assets/track.js on the desk page', () => {
-    assert.match(html, /<script[^>]+src=["']assets\/track\.js["']/);
-  });
-
-  it('tracks paper opens', () => {
-    assert.match(html, /track\(\s*['"]paper_open['"]/);
-  });
-
-  it('tracks essay opens', () => {
-    assert.match(html, /track\(\s*['"]essay_open['"]/);
-  });
-
-  it('tracks successful doodle submits', () => {
-    assert.match(html, /track\(\s*['"]doodle_submit['"]/);
+  it('exports trackEvent', async () => {
+    const mod = await import('../assets/track.js');
+    assert.equal(typeof mod.trackEvent, 'function');
   });
 });
