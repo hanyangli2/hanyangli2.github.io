@@ -77,6 +77,14 @@
         .stat .l { color: var(--mute); margin-top: 6px; }
         h2 { font-weight: normal; font-size: 1.35rem; margin: 32px 0 6px; }
         .hint { color: var(--mute); margin: 0 0 14px; font-size: 0.95rem; }
+        .more-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin: 16px 0 0;
+        }
+        .more-wrap button { margin-top: 0; }
+        .more-wrap .hint { margin: 0; }
         .chart-wrap {
             width: 100%;
             overflow: hidden;
@@ -217,6 +225,10 @@
                 <thead><tr><th>when</th><th>event</th><th>where</th><th>device</th><th>from</th><th>props</th></tr></thead>
                 <tbody id="recent"></tbody>
             </table>
+            <div class="more-wrap">
+                <button type="button" id="load-more" class="hidden">load more</button>
+                <p class="hint" id="recent-status"></p>
+            </div>
 
             <div class="back">
                 <a href="index.html">← desk</a>
@@ -233,6 +245,10 @@
         const input = document.getElementById('password');
         const err = document.getElementById('gate-error');
         let currentDays = Number(localStorage.getItem(DAYS_KEY) || 30);
+        let recentOffset = 0;
+        let recentLimit = 40;
+        let recentHasMore = false;
+        let loadingMore = false;
 
         const MIX_COLORS = {
             page_view: '#6b4c2a',
@@ -355,6 +371,37 @@
             });
         }
 
+        function recentRowHtml(row) {
+            const when = new Date(row.created_at).toLocaleString();
+            const props = row.props ? JSON.stringify(row.props) : '';
+            const where = [row.city, row.country].filter(Boolean).join(', ') || '—';
+            const device = [row.device, row.os].filter(Boolean).join(' · ') || '—';
+            const source = row.source || 'direct';
+            return `<tr>
+                <td>${escapeHtml(when)}</td>
+                <td><code>${escapeHtml(row.name)}</code></td>
+                <td>${escapeHtml(where)}</td>
+                <td>${escapeHtml(device)}</td>
+                <td>${escapeHtml(source)}</td>
+                <td>${escapeHtml(props)}</td>
+            </tr>`;
+        }
+
+        function updateRecentStatus() {
+            const btn = document.getElementById('load-more');
+            const status = document.getElementById('recent-status');
+            btn.classList.toggle('hidden', !recentHasMore);
+            btn.disabled = loadingMore;
+            btn.textContent = loadingMore ? 'loading…' : 'load more';
+            if (!recentOffset) {
+                status.textContent = '';
+            } else if (recentHasMore) {
+                status.textContent = `showing ${recentOffset}`;
+            } else {
+                status.textContent = `showing all ${recentOffset}`;
+            }
+        }
+
         async function load(password, days = currentDays) {
             err.classList.add('hidden');
             currentDays = days;
@@ -388,26 +435,50 @@
             renderBars(data.byEssay, document.getElementById('essay-bars'));
             renderMix(data.byName);
 
+            const rows = data.recent || [];
             const recent = document.getElementById('recent');
-            recent.innerHTML = (data.recent || []).map((row) => {
-                const when = new Date(row.created_at).toLocaleString();
-                const props = row.props ? JSON.stringify(row.props) : '';
-                const where = [row.city, row.country].filter(Boolean).join(', ') || '—';
-                const device = [row.device, row.os].filter(Boolean).join(' · ') || '—';
-                const source = row.source || 'direct';
-                return `<tr>
-                    <td>${escapeHtml(when)}</td>
-                    <td><code>${escapeHtml(row.name)}</code></td>
-                    <td>${escapeHtml(where)}</td>
-                    <td>${escapeHtml(device)}</td>
-                    <td>${escapeHtml(source)}</td>
-                    <td>${escapeHtml(props)}</td>
-                </tr>`;
-            }).join('') || '<tr><td colspan="6">none yet</td></tr>';
+            recent.innerHTML = rows.map(recentRowHtml).join('') || '<tr><td colspan="6">none yet</td></tr>';
+            recentOffset = rows.length;
+            recentLimit = data.recentLimit || 40;
+            recentHasMore = Boolean(data.recentHasMore);
+            updateRecentStatus();
 
             localStorage.setItem(KEY, password);
             gate.classList.add('hidden');
             panel.classList.remove('hidden');
+        }
+
+        async function loadMore() {
+            if (loadingMore || !recentHasMore) return;
+            const password = localStorage.getItem(KEY);
+            if (!password) return;
+
+            loadingMore = true;
+            updateRecentStatus();
+            try {
+                const res = await fetch(
+                    '/api/analytics?days=' + currentDays + '&offset=' + recentOffset + '&limit=' + recentLimit,
+                    { headers: { Authorization: 'Bearer ' + password } }
+                );
+                if (res.status === 401) throw new Error('wrong password');
+                if (!res.ok) {
+                    const body = await res.json().catch(() => ({}));
+                    throw new Error(body.error || 'failed to load more');
+                }
+                const data = await res.json();
+                const rows = data.recent || [];
+                const recent = document.getElementById('recent');
+                if (rows.length) {
+                    recent.insertAdjacentHTML('beforeend', rows.map(recentRowHtml).join(''));
+                }
+                recentOffset += rows.length;
+                recentHasMore = Boolean(data.recentHasMore) && rows.length > 0;
+            } catch (e) {
+                document.getElementById('recent-status').textContent = e.message || 'failed';
+            } finally {
+                loadingMore = false;
+                updateRecentStatus();
+            }
         }
 
         document.getElementById('unlock').addEventListener('click', async () => {
@@ -436,6 +507,10 @@
                 gate.classList.remove('hidden');
                 panel.classList.add('hidden');
             }
+        });
+
+        document.getElementById('load-more').addEventListener('click', () => {
+            loadMore();
         });
 
         document.getElementById('signout').addEventListener('click', (e) => {

@@ -57,13 +57,14 @@ async function supabaseInsert(event) {
   };
 }
 
-async function supabaseSelect(sinceIso) {
+async function supabaseSelect(sinceIso, { limit = 2000, offset = 0 } = {}) {
   const run = async (select) => {
     const url = new URL(`${SUPABASE_URL}/rest/v1/analytics_events`);
     url.searchParams.set('select', select);
     url.searchParams.set('created_at', `gte.${sinceIso}`);
     url.searchParams.set('order', 'created_at.desc');
-    url.searchParams.set('limit', '2000');
+    url.searchParams.set('limit', String(limit));
+    if (offset > 0) url.searchParams.set('offset', String(offset));
     return fetch(url, {
       method: 'GET',
       headers: {
@@ -104,7 +105,16 @@ function authorized(req) {
   }
 }
 
-function summarize(rows) {
+function mapRecent(rows) {
+  return rows.map((row) => ({
+    ...row,
+    source: trafficSource(row, SITE_HOSTS),
+  }));
+}
+
+function summarize(rows, opts = {}) {
+  const recentLimit = Math.min(100, Math.max(1, Number(opts.recentLimit) || 40));
+  const recentOffset = Math.max(0, Number(opts.recentOffset) || 0);
   const byName = {};
   const byPaper = {};
   const byEssay = {};
@@ -218,10 +228,11 @@ function summarize(rows) {
     essayDepth,
     essayDepthAvg,
     daily: daysMap,
-    recent: rows.slice(0, 50).map((row) => ({
-      ...row,
-      source: trafficSource(row, SITE_HOSTS),
-    })),
+    recent: mapRecent(rows.slice(recentOffset, recentOffset + recentLimit)),
+    recentOffset,
+    recentLimit,
+    recentTotal: rows.length,
+    recentHasMore: recentOffset + recentLimit < rows.length,
   };
 }
 
@@ -292,15 +303,25 @@ async function handleGet(req, res) {
   }
 
   let days = 30;
+  let offset = 0;
+  let limit = 40;
   try {
     const url = new URL(req.url, 'http://localhost');
     days = Math.min(90, Math.max(1, Number(url.searchParams.get('days') || 30)));
+    offset = Math.max(0, Number(url.searchParams.get('offset') || 0) || 0);
+    limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') || 40) || 40));
   } catch {
     days = 30;
+    offset = 0;
+    limit = 40;
   }
 
   const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-  const list = await supabaseSelect(since);
+  // Load-more requests only need the next page of recent events.
+  const selectOpts = offset > 0
+    ? { limit: limit + 1, offset }
+    : { limit: 2000, offset: 0 };
+  const list = await supabaseSelect(since, selectOpts);
   const text = await list.text();
 
   if (!list.ok) {
@@ -322,7 +343,19 @@ async function handleGet(req, res) {
     return json(res, 502, { error: 'unexpected supabase response', detail: text.slice(0, 300) });
   }
 
-  return json(res, 200, { days, ...summarize(rows) });
+  if (offset > 0) {
+    const hasMore = rows.length > limit;
+    const page = rows.slice(0, limit);
+    return json(res, 200, {
+      days,
+      recent: mapRecent(page),
+      recentOffset: offset,
+      recentLimit: limit,
+      recentHasMore: hasMore,
+    });
+  }
+
+  return json(res, 200, { days, ...summarize(rows, { recentOffset: 0, recentLimit: limit }) });
 }
 
 module.exports = async function handler(req, res) {
@@ -346,4 +379,5 @@ module.exports = async function handler(req, res) {
 };
 
 module.exports.summarize = summarize;
+module.exports.mapRecent = mapRecent;
 module.exports.enrichEvent = enrichEvent;

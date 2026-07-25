@@ -257,6 +257,30 @@ describe('summarize', () => {
     assert.equal(out.byOutbound.eyeball, 2);
     assert.equal(out.byOutbound['bigstack.io'], 1);
   });
+
+  it('paginates recent events with hasMore metadata', () => {
+    const { summarize } = require('../api/analytics.js');
+    const rows = Array.from({ length: 45 }, (_, i) => ({
+      name: 'page_view',
+      created_at: `2026-07-25T00:${String(i).padStart(2, '0')}:00Z`,
+      session_id: `s${i}`,
+      props: {},
+      path: '/',
+      referrer: null,
+    }));
+    const page1 = summarize(rows, { recentLimit: 40, recentOffset: 0 });
+    assert.equal(page1.recent.length, 40);
+    assert.equal(page1.recentOffset, 0);
+    assert.equal(page1.recentLimit, 40);
+    assert.equal(page1.recentTotal, 45);
+    assert.equal(page1.recentHasMore, true);
+    assert.equal(page1.recent[0].session_id, 's0');
+
+    const page2 = summarize(rows, { recentLimit: 40, recentOffset: 40 });
+    assert.equal(page2.recent.length, 5);
+    assert.equal(page2.recentHasMore, false);
+    assert.equal(page2.recent[0].session_id, 's40');
+  });
 });
 
 describe('dashboard visuals', () => {
@@ -270,6 +294,8 @@ describe('dashboard visuals', () => {
     assert.match(html, /referrer-bars/);
     assert.match(html, /depth-bars/);
     assert.match(html, /outbound-bars/);
+    assert.match(html, /id="load-more"/);
+    assert.match(html, /offset=/);
   });
 
   it('desk page wires scroll and outbound tracking', () => {
