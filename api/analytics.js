@@ -109,9 +109,11 @@ function summarize(rows) {
   const byPaper = {};
   const byEssay = {};
   const countrySessions = {};
+  const citySessions = {};
   const deviceSessions = {};
   const osSessions = {};
   const referrerSessions = {};
+  const pathSessions = {};
   const sessions = new Set();
   const daysMap = {};
 
@@ -128,9 +130,19 @@ function summarize(rows) {
       (map[label] ||= new Set()).add(visitor);
     };
     addVisitor(countrySessions, row.country);
+    const cityLabel = row.city
+      ? (row.country ? `${row.city}, ${row.country}` : row.city)
+      : (row.country || 'unknown');
+    addVisitor(citySessions, cityLabel);
     addVisitor(deviceSessions, row.device);
     addVisitor(osSessions, row.os);
     addVisitor(referrerSessions, trafficSource(row, SITE_HOSTS));
+
+    // Landing path without hash noise for entry pages.
+    if (row.name === 'page_view' && row.path) {
+      const landing = String(row.path).split('#')[0] || '/';
+      addVisitor(pathSessions, landing);
+    }
 
     if (row.name === 'paper_open' && row.props && row.props.paper) {
       bump(byPaper, row.props.paper);
@@ -152,9 +164,11 @@ function summarize(rows) {
     byPaper,
     byEssay,
     byCountry: sessionCounts(countrySessions),
+    byCity: sessionCounts(citySessions),
     byDevice: sessionCounts(deviceSessions),
     byOs: sessionCounts(osSessions),
     byReferrer: sessionCounts(referrerSessions),
+    byLanding: sessionCounts(pathSessions),
     daily: daysMap,
     recent: rows.slice(0, 50).map((row) => ({
       ...row,

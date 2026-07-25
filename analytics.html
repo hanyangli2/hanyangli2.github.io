@@ -176,8 +176,12 @@
             <div id="referrer-bars"></div>
 
             <h2>where they're from</h2>
-            <p class="hint">unique sessions by country (Vercel edge · no raw IP stored)</p>
-            <div id="country-bars"></div>
+            <p class="hint">unique sessions by city</p>
+            <div id="city-bars"></div>
+
+            <h2>landing pages</h2>
+            <p class="hint">unique sessions by first path</p>
+            <div id="landing-bars"></div>
 
             <h2>device</h2>
             <p class="hint">unique sessions · mobile / desktop / tablet</p>
@@ -366,7 +370,8 @@
 
             renderDailyChart(data.daily, data.days);
             renderBars(data.byReferrer, document.getElementById('referrer-bars'));
-            renderBars(data.byCountry, document.getElementById('country-bars'));
+            renderBars(data.byCity, document.getElementById('city-bars'));
+            renderBars(data.byLanding, document.getElementById('landing-bars'));
             renderBars(data.byDevice, document.getElementById('device-bars'));
             renderBars(data.byOs, document.getElementById('os-bars'));
             renderBars(data.byPaper, document.getElementById('paper-bars'));

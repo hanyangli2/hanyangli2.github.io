@@ -97,7 +97,7 @@ describe('referrerSource', () => {
 });
 
 describe('summarize', () => {
-  it('aggregates papers, essays, country, device, and referrer', () => {
+  it('aggregates papers, essays, city, device, and referrer', () => {
     const { summarize } = require('../api/analytics.js');
     const out = summarize([
       {
@@ -105,7 +105,9 @@ describe('summarize', () => {
         created_at: '2026-07-25T00:00:00Z',
         session_id: 'a',
         props: {},
+        path: '/',
         country: 'US',
+        city: 'Boston',
         device: 'mobile',
         os: 'ios',
         referrer: 'https://t.co/abc',
@@ -115,7 +117,9 @@ describe('summarize', () => {
         created_at: '2026-07-25T00:00:00Z',
         session_id: 'a',
         props: { paper: 'writings' },
+        path: '/#writings',
         country: 'US',
+        city: 'Boston',
         device: 'mobile',
         os: 'ios',
         referrer: 'https://t.co/abc',
@@ -125,7 +129,9 @@ describe('summarize', () => {
         created_at: '2026-07-25T00:00:00Z',
         session_id: 'b',
         props: { slug: 'surveiled' },
+        path: '/#writings/surveiled',
         country: 'CA',
+        city: 'Toronto',
         device: 'desktop',
         os: 'mac',
         referrer: 'https://www.linkedin.com/in/foo',
@@ -135,7 +141,9 @@ describe('summarize', () => {
         created_at: '2026-07-25T00:00:00Z',
         session_id: 'c',
         props: {},
+        path: '/?utm_source=x',
         country: 'US',
+        city: null,
         device: 'desktop',
         os: 'mac',
         referrer: null,
@@ -145,12 +153,15 @@ describe('summarize', () => {
     assert.equal(out.uniqueSessions, 3);
     assert.equal(out.byPaper.writings, 1);
     assert.equal(out.byEssay.surveiled, 1);
-    assert.equal(out.byCountry.US, 2);
+    assert.equal(out.byCity['Boston, US'], 1);
+    assert.equal(out.byCity['Toronto, CA'], 1);
+    assert.equal(out.byCity.US, 1);
     assert.equal(out.byDevice.mobile, 1);
     assert.equal(out.byOs.mac, 2);
-    assert.equal(out.byReferrer.x, 1);
+    assert.equal(out.byReferrer.x, 2);
     assert.equal(out.byReferrer.linkedin, 1);
-    assert.equal(out.byReferrer.direct, 1);
+    assert.equal(out.byLanding['/'], 1);
+    assert.equal(out.byLanding['/?utm_source=x'], 1);
   });
 });
 
@@ -158,7 +169,8 @@ describe('dashboard visuals', () => {
   it('uses a line chart and shows geo/device/referrer sections', () => {
     const html = readFileSync(join(root, 'analytics.html'), 'utf8');
     assert.match(html, /stroke-linejoin="round"/);
-    assert.match(html, /country-bars/);
+    assert.match(html, /city-bars/);
+    assert.match(html, /landing-bars/);
     assert.match(html, /device-bars/);
     assert.match(html, /os-bars/);
     assert.match(html, /referrer-bars/);
