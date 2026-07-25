@@ -191,6 +191,14 @@
             <p class="hint">unique sessions · operating system from user-agent</p>
             <div id="os-bars"></div>
 
+            <h2>read depth</h2>
+            <p class="hint">average max scroll % by essay (unique sessions)</p>
+            <div id="depth-bars"></div>
+
+            <h2>outbound clicks</h2>
+            <p class="hint">unique sessions that clicked off-site links</p>
+            <div id="outbound-bars"></div>
+
             <h2>where people go</h2>
             <p class="hint">paper opens on the desk</p>
             <div id="paper-bars"></div>
@@ -372,6 +380,8 @@
             renderBars(data.byReferrer, document.getElementById('referrer-bars'));
             renderBars(data.byCity, document.getElementById('city-bars'));
             renderBars(data.byLanding, document.getElementById('landing-bars'));
+            renderBars(data.essayDepthAvg, document.getElementById('depth-bars'));
+            renderBars(data.byOutbound, document.getElementById('outbound-bars'));
             renderBars(data.byDevice, document.getElementById('device-bars'));
             renderBars(data.byOs, document.getElementById('os-bars'));
             renderBars(data.byPaper, document.getElementById('paper-bars'));

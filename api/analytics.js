@@ -114,6 +114,9 @@ function summarize(rows) {
   const osSessions = {};
   const referrerSessions = {};
   const pathSessions = {};
+  const outboundSessions = {};
+  const essayOpenSessions = {};
+  const essayMaxDepth = {};
   const sessions = new Set();
   const daysMap = {};
 
@@ -138,7 +141,6 @@ function summarize(rows) {
     addVisitor(osSessions, row.os);
     addVisitor(referrerSessions, trafficSource(row, SITE_HOSTS));
 
-    // Landing path without hash noise for entry pages.
     if (row.name === 'page_view' && row.path) {
       const landing = String(row.path).split('#')[0] || '/';
       addVisitor(pathSessions, landing);
@@ -149,6 +151,17 @@ function summarize(rows) {
     }
     if (row.name === 'essay_open' && row.props && row.props.slug) {
       bump(byEssay, row.props.slug);
+      addVisitor(essayOpenSessions, row.props.slug);
+    }
+    if (row.name === 'essay_scroll' && row.props && row.props.slug) {
+      const slug = row.props.slug;
+      const depth = Number(row.props.depth) || 0;
+      essayMaxDepth[slug] ||= {};
+      essayMaxDepth[slug][visitor] = Math.max(essayMaxDepth[slug][visitor] || 0, depth);
+    }
+    if (row.name === 'outbound_click' && row.props) {
+      const key = row.props.label || row.props.host || 'unknown';
+      addVisitor(outboundSessions, key);
     }
   }
 
@@ -156,6 +169,38 @@ function summarize(rows) {
     Object.fromEntries(
       Object.entries(map).map(([key, values]) => [key, values.size])
     );
+
+  const essayDepth = {};
+  const essayDepthAvg = {};
+  const allEssaySlugs = new Set([
+    ...Object.keys(essayOpenSessions),
+    ...Object.keys(essayMaxDepth),
+  ]);
+  for (const slug of allEssaySlugs) {
+    const opens = (essayOpenSessions[slug] && essayOpenSessions[slug].size) || 0;
+    const depthMap = essayMaxDepth[slug] || {};
+    // Include openers with no scroll events as 0% depth.
+    const openers = essayOpenSessions[slug] || new Set();
+    const depths = [];
+    for (const visitor of openers) {
+      depths.push(depthMap[visitor] || 0);
+    }
+    for (const visitor of Object.keys(depthMap)) {
+      if (!openers.has(visitor)) depths.push(depthMap[visitor]);
+    }
+    const avg = depths.length
+      ? Math.round(depths.reduce((s, n) => s + n, 0) / depths.length)
+      : 0;
+    const finished = depths.filter((d) => d >= 100).length;
+    const reached50 = depths.filter((d) => d >= 50).length;
+    essayDepth[slug] = {
+      opens: opens || depths.length,
+      avgMaxDepth: avg,
+      reached50,
+      finished,
+    };
+    essayDepthAvg[slug] = avg;
+  }
 
   return {
     totalEvents: rows.length,
@@ -169,6 +214,9 @@ function summarize(rows) {
     byOs: sessionCounts(osSessions),
     byReferrer: sessionCounts(referrerSessions),
     byLanding: sessionCounts(pathSessions),
+    byOutbound: sessionCounts(outboundSessions),
+    essayDepth,
+    essayDepthAvg,
     daily: daysMap,
     recent: rows.slice(0, 50).map((row) => ({
       ...row,
