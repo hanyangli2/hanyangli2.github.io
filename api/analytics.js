@@ -106,9 +106,9 @@ function summarize(rows) {
   const byName = {};
   const byPaper = {};
   const byEssay = {};
-  const byCountry = {};
-  const byDevice = {};
-  const byOs = {};
+  const countrySessions = {};
+  const deviceSessions = {};
+  const osSessions = {};
   const sessions = new Set();
   const daysMap = {};
 
@@ -119,9 +119,14 @@ function summarize(rows) {
     const day = String(row.created_at).slice(0, 10);
     daysMap[day] = (daysMap[day] || 0) + 1;
 
-    bump(byCountry, row.country || 'unknown');
-    bump(byDevice, row.device || 'unknown');
-    bump(byOs, row.os || 'unknown');
+    const visitor = row.session_id || `event:${row.id}`;
+    const addVisitor = (map, key) => {
+      const label = key || 'unknown';
+      (map[label] ||= new Set()).add(visitor);
+    };
+    addVisitor(countrySessions, row.country);
+    addVisitor(deviceSessions, row.device);
+    addVisitor(osSessions, row.os);
 
     if (row.name === 'paper_open' && row.props && row.props.paper) {
       bump(byPaper, row.props.paper);
@@ -131,15 +136,20 @@ function summarize(rows) {
     }
   }
 
+  const sessionCounts = (map) =>
+    Object.fromEntries(
+      Object.entries(map).map(([key, values]) => [key, values.size])
+    );
+
   return {
     totalEvents: rows.length,
     uniqueSessions: sessions.size,
     byName,
     byPaper,
     byEssay,
-    byCountry,
-    byDevice,
-    byOs,
+    byCountry: sessionCounts(countrySessions),
+    byDevice: sessionCounts(deviceSessions),
+    byOs: sessionCounts(osSessions),
     daily: daysMap,
     recent: rows.slice(0, 50),
   };

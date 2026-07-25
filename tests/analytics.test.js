@@ -63,8 +63,8 @@ describe('summarize', () => {
     assert.equal(out.uniqueSessions, 2);
     assert.equal(out.byPaper.writings, 1);
     assert.equal(out.byEssay.surveiled, 1);
-    assert.equal(out.byCountry.US, 2);
-    assert.equal(out.byDevice.mobile, 2);
+    assert.equal(out.byCountry.US, 1);
+    assert.equal(out.byDevice.mobile, 1);
     assert.equal(out.byOs.mac, 1);
   });
 });
@@ -79,6 +79,10 @@ describe('ua helpers', () => {
     assert.deepEqual(
       geoFromHeaders({ 'x-vercel-ip-country': 'US', 'x-vercel-ip-city': 'Boston' }),
       { country: 'US', city: 'Boston' }
+    );
+    assert.deepEqual(
+      geoFromHeaders({ 'x-vercel-ip-country': 'US', 'x-vercel-ip-city': 'New%20York' }),
+      { country: 'US', city: 'New York' }
     );
   });
 });

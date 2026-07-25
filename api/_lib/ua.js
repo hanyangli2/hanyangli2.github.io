@@ -30,9 +30,17 @@ function geoFromHeaders(headers) {
     const v = h[k] || h[k.toLowerCase()];
     return typeof v === 'string' && v.trim() ? v.trim() : null;
   };
+  const decode = (value) => {
+    if (!value) return null;
+    try {
+      return decodeURIComponent(value);
+    } catch {
+      return value;
+    }
+  };
   return {
     country: get('x-vercel-ip-country'),
-    city: get('x-vercel-ip-city'),
+    city: decode(get('x-vercel-ip-city')),
   };
 }
 
