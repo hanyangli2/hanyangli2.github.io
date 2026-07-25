@@ -536,45 +536,58 @@
             100% { opacity: 1; transform: rotate(var(--dr, 0deg)) scale(1) translateY(0); }
         }
 
-        /* ===== "+" scrap, parked on the desk beside the board ===== */
+        /* ===== "+ draw", pinned to the sheet's letterhead =====
+           On the paper rather than floating over the viewport: a fixed button
+           at the bottom of the screen sits under iOS Safari's toolbar. Sticky
+           so it stays put however far the board is scrolled. */
+
+        .board-head {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: #fff;
+            padding: 10px 0 16px;
+        }
+
+        /* The sheet's top padding scrolls with its content, so doodles would
+           slide through the band above the stuck header. Paint over it. */
+        .board-head::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 100%;
+            height: 80px;
+            background: #fff;
+        }
+
+        /* Reserve room so a wrapping title never runs under the button. */
+        .sheet-doodles h1 {
+            margin-bottom: 0;
+            padding-right: 84px;
+        }
 
         .add-doodle {
-            position: fixed;
-            right: clamp(14px, 4vw, 40px);
-            bottom: calc(clamp(14px, 4vh, 40px) + env(safe-area-inset-bottom, 0px));
-            width: 62px;
-            height: 62px;
-            border: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+            border: 1px solid #1a1a1a;
             background: #fffdf7;
-            color: #2b2622;
+            color: #1a1a1a;
             font-family: 'HarryHand', 'Times New Roman', Times, serif;
-            font-size: 30px;
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 5px 11px;
             line-height: 1;
             cursor: pointer;
-            transform: rotate(-4deg);
-            box-shadow: 0 10px 22px rgba(40, 25, 10, 0.4),
-                        0 3px 6px rgba(40, 25, 10, 0.28);
-            z-index: 900;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.4s ease, transform 0.2s ease;
+            transform: rotate(-1.5deg);
+            box-shadow: 2px 3px 0 rgba(40, 25, 10, 0.16);
+            transition: background 0.2s ease, color 0.2s ease;
         }
 
-        body[data-page="doodles"] .add-doodle {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .add-doodle:hover  { transform: rotate(-1deg) translateY(-2px); }
-        .add-doodle:active { transform: rotate(-4deg) translateY(1px); }
-
-        .add-doodle span {
-            display: block;
-            font-size: 9px;
-            font-style: italic;
-            color: #999;
-            margin-top: 1px;
-        }
+        .add-doodle:hover  { background: #1a1a1a; color: #fff; }
+        .add-doodle:active { transform: rotate(-1.5deg) translate(1px, 1px); box-shadow: none; }
 
         /* ===== Drawing sheet (modal) ===== */
 
@@ -742,7 +755,6 @@
             body[data-page="doodles"]  .world { transform: translate(0, -100vh); }
 
             .sheet-doodles { padding: 36px 20px 28px; }
-            .add-doodle { width: 54px; height: 54px; font-size: 26px; }
             .draw-sheet { padding: 16px; }
             /* Stack the footer so the name field isn't squeezed to nothing. */
             .draw-foot { flex-wrap: wrap; }
@@ -929,7 +941,10 @@
         <!-- Doodle board paper -->
         <div class="paper paper-doodles">
             <div class="sheet sheet-doodles sheet-rotate" style="--sheet-rx: 0.7deg;" id="board-sheet">
-                <h1>Doodle Board</h1>
+                <div class="board-head">
+                    <h1>Doodle Board</h1>
+                    <button class="add-doodle" id="add-doodle">+ draw</button>
+                </div>
                 <div class="board" id="board">
                     <div class="board-status">loading the board…</div>
                 </div>
@@ -938,8 +953,6 @@
         </div>
 
     </div>
-
-    <button class="add-doodle" id="add-doodle" aria-label="add a doodle">+<span>draw</span></button>
 
     <!-- Drawing sheet -->
     <div class="draw-overlay" id="draw-overlay" role="dialog" aria-modal="true" aria-label="draw a doodle">
