@@ -24,36 +24,70 @@ function bump(map, key) {
 }
 
 async function supabaseInsert(event) {
-  return fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
-    method: 'POST',
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
+  const post = (body) =>
+    fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(body),
+    });
+
+  const res = await post(event);
+  if (res.ok) return res;
+
+  const text = await res.text();
+  // Migration not applied yet — retry without geo/device columns.
+  if (text.includes('42703') || text.includes('does not exist')) {
+    const { country, city, device, os, ...base } = event;
+    return post(base);
+  }
+
+  return {
+    ok: false,
+    status: res.status,
+    async text() {
+      return text;
     },
-    body: JSON.stringify(event),
-  });
+  };
 }
 
 async function supabaseSelect(sinceIso) {
-  const url = new URL(`${SUPABASE_URL}/rest/v1/analytics_events`);
-  url.searchParams.set(
-    'select',
-    'id,created_at,name,props,path,session_id,country,city,device,os'
-  );
-  url.searchParams.set('created_at', `gte.${sinceIso}`);
-  url.searchParams.set('order', 'created_at.desc');
-  url.searchParams.set('limit', '2000');
+  const run = async (select) => {
+    const url = new URL(`${SUPABASE_URL}/rest/v1/analytics_events`);
+    url.searchParams.set('select', select);
+    url.searchParams.set('created_at', `gte.${sinceIso}`);
+    url.searchParams.set('order', 'created_at.desc');
+    url.searchParams.set('limit', '2000');
+    return fetch(url, {
+      method: 'GET',
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+      },
+    });
+  };
 
-  return fetch(url, {
-    method: 'GET',
-    headers: {
-      apikey: SUPABASE_SERVICE_ROLE_KEY,
-      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-      'Content-Type': 'application/json',
+  const full = 'id,created_at,name,props,path,session_id,country,city,device,os';
+  const res = await run(full);
+  if (res.ok) return res;
+
+  const text = await res.text();
+  if (text.includes('42703') || text.includes('does not exist')) {
+    return run('id,created_at,name,props,path,session_id');
+  }
+
+  return {
+    ok: false,
+    status: res.status,
+    async text() {
+      return text;
     },
-  });
+  };
 }
 
 function authorized(req) {
