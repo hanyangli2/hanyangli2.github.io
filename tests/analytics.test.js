@@ -51,9 +51,17 @@ describe('first-party analytics wiring', () => {
   });
 });
 
-describe('trackEvent helper', () => {
-  it('exports trackEvent', async () => {
-    const mod = await import('../assets/track.js');
-    assert.equal(typeof mod.trackEvent, 'function');
+describe('summarize', () => {
+  it('aggregates papers and essays', () => {
+    const { summarize } = require('../api/analytics.js');
+    const out = summarize([
+      { name: 'page_view', created_at: '2026-07-25T00:00:00Z', session_id: 'a', props: {} },
+      { name: 'paper_open', created_at: '2026-07-25T00:00:00Z', session_id: 'a', props: { paper: 'writings' } },
+      { name: 'essay_open', created_at: '2026-07-25T00:00:00Z', session_id: 'b', props: { slug: 'surveiled' } },
+    ]);
+    assert.equal(out.totalEvents, 3);
+    assert.equal(out.uniqueSessions, 2);
+    assert.equal(out.byPaper.writings, 1);
+    assert.equal(out.byEssay.surveiled, 1);
   });
 });

@@ -165,7 +165,7 @@
             if (res.status === 401) throw new Error('wrong password');
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
-                throw new Error(body.error || 'failed to load');
+                throw new Error(body.detail ? `${body.error}: ${body.detail}` : (body.error || 'failed to load'));
             }
             const data = await res.json();
             document.getElementById('days-label').textContent = data.days;

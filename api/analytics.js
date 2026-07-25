@@ -1,10 +1,10 @@
 const { sanitizeEvent } = require('./_lib/sanitize');
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://ypsmbieyrilvruiivhdu.supabase.co';
+const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://ypsmbieyrilvruiivhdu.supabase.co').replace(/\/$/, '');
 // Same public anon key already embedded for doodles; override via env if rotated.
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwc21iaWV5cmlsdnJ1aWl2aGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgyMDUsImV4cCI6MjA2NTQxNDIwNX0.KIF9sokSNOhjCAQhUhopD9Wfl55TlN_NDcINWdALFSw';
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-const ANALYTICS_PASSWORD = process.env.ANALYTICS_PASSWORD || '';
+const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwc21iaWV5cmlsdnJ1aWl2aGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgyMDUsImV4cCI6MjA2NTQxNDIwNX0.KIF9sokSNOhjCAQhUhopD9Wfl55TlN_NDcINWdALFSw').trim();
+const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+const ANALYTICS_PASSWORD = (process.env.ANALYTICS_PASSWORD || '').trim();
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -18,106 +18,52 @@ function json(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-async function supabase(path, { method = 'GET', key, body } = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    method,
+async function supabaseInsert(event) {
+  return fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
+    method: 'POST',
     headers: {
-      apikey: key,
-      Authorization: `Bearer ${key}`,
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
       'Content-Type': 'application/json',
-      Prefer: method === 'POST' ? 'return=minimal' : 'count=exact',
+      Prefer: 'return=minimal',
     },
-    body: body ? JSON.stringify(body) : undefined,
+    body: JSON.stringify(event),
   });
-  return res;
+}
+
+async function supabaseSelect(sinceIso) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/analytics_events`);
+  url.searchParams.set(
+    'select',
+    'id,created_at,name,props,path,session_id'
+  );
+  url.searchParams.set('created_at', `gte.${sinceIso}`);
+  url.searchParams.set('order', 'created_at.desc');
+  url.searchParams.set('limit', '2000');
+
+  return fetch(url, {
+    method: 'GET',
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+  });
 }
 
 function authorized(req) {
   if (!ANALYTICS_PASSWORD) return false;
   const header = req.headers.authorization || '';
   if (header === `Bearer ${ANALYTICS_PASSWORD}`) return true;
-  const url = new URL(req.url, 'http://localhost');
-  return url.searchParams.get('password') === ANALYTICS_PASSWORD;
+  try {
+    const url = new URL(req.url, 'http://localhost');
+    return url.searchParams.get('password') === ANALYTICS_PASSWORD;
+  } catch {
+    return false;
+  }
 }
 
-async function handlePost(req, res) {
-  if (!SUPABASE_ANON_KEY) {
-    return json(res, 500, { error: 'SUPABASE_ANON_KEY not configured' });
-  }
-
-  let body = req.body;
-  if (typeof body === 'string') {
-    try {
-      body = JSON.parse(body);
-    } catch {
-      return json(res, 400, { error: 'invalid json' });
-    }
-  }
-
-  // Vercel may leave body undefined for some content-types; read raw if needed.
-  if (body == null && typeof req.on === 'function') {
-    body = await new Promise((resolve, reject) => {
-      let raw = '';
-      req.on('data', (chunk) => {
-        raw += chunk;
-        if (raw.length > 8192) {
-          reject(new Error('payload too large'));
-        }
-      });
-      req.on('end', () => {
-        if (!raw) return resolve({});
-        try {
-          resolve(JSON.parse(raw));
-        } catch (err) {
-          reject(err);
-        }
-      });
-      req.on('error', reject);
-    }).catch(() => null);
-    if (body == null) return json(res, 400, { error: 'invalid json' });
-  }
-
-  const { event, error } = sanitizeEvent(body);
-  if (error) return json(res, 400, { error });
-
-  const insert = await supabase('analytics_events', {
-    method: 'POST',
-    key: SUPABASE_ANON_KEY,
-    body: event,
-  });
-
-  if (!insert.ok) {
-    const text = await insert.text();
-    return json(res, 502, { error: 'insert failed', detail: text.slice(0, 300) });
-  }
-
-  res.statusCode = 204;
-  return res.end();
-}
-
-async function handleGet(req, res) {
-  if (!authorized(req)) {
-    return json(res, 401, { error: 'unauthorized' });
-  }
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
-    return json(res, 500, { error: 'SUPABASE_SERVICE_ROLE_KEY not configured' });
-  }
-
-  const url = new URL(req.url, 'http://localhost');
-  const days = Math.min(90, Math.max(1, Number(url.searchParams.get('days') || 30)));
-  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-
-  const list = await supabase(
-    `analytics_events?select=id,created_at,name,props,path,session_id&created_at=gte.${since}&order=created_at.desc&limit=2000`,
-    { key: SUPABASE_SERVICE_ROLE_KEY }
-  );
-
-  if (!list.ok) {
-    const text = await list.text();
-    return json(res, 502, { error: 'query failed', detail: text.slice(0, 300) });
-  }
-
-  const rows = await list.json();
+function summarize(rows) {
   const byName = {};
   const byPaper = {};
   const byEssay = {};
@@ -139,8 +85,7 @@ async function handleGet(req, res) {
     }
   }
 
-  return json(res, 200, {
-    days,
+  return {
     totalEvents: rows.length,
     uniqueSessions: sessions.size,
     byName,
@@ -148,7 +93,96 @@ async function handleGet(req, res) {
     byEssay,
     daily: daysMap,
     recent: rows.slice(0, 50),
-  });
+  };
+}
+
+async function handlePost(req, res) {
+  if (!SUPABASE_ANON_KEY) {
+    return json(res, 500, { error: 'SUPABASE_ANON_KEY not configured' });
+  }
+
+  let body = req.body;
+  if (typeof body === 'string') {
+    try {
+      body = JSON.parse(body);
+    } catch {
+      return json(res, 400, { error: 'invalid json' });
+    }
+  }
+
+  if (body == null && typeof req.on === 'function') {
+    body = await new Promise((resolve, reject) => {
+      let raw = '';
+      req.on('data', (chunk) => {
+        raw += chunk;
+        if (raw.length > 8192) reject(new Error('payload too large'));
+      });
+      req.on('end', () => {
+        if (!raw) return resolve({});
+        try {
+          resolve(JSON.parse(raw));
+        } catch (err) {
+          reject(err);
+        }
+      });
+      req.on('error', reject);
+    }).catch(() => null);
+    if (body == null) return json(res, 400, { error: 'invalid json' });
+  }
+
+  const { event, error } = sanitizeEvent(body);
+  if (error) return json(res, 400, { error });
+
+  const insert = await supabaseInsert(event);
+  if (!insert.ok) {
+    const text = await insert.text();
+    return json(res, 502, { error: 'insert failed', detail: text.slice(0, 300) });
+  }
+
+  res.statusCode = 204;
+  return res.end();
+}
+
+async function handleGet(req, res) {
+  if (!authorized(req)) {
+    return json(res, 401, { error: 'unauthorized' });
+  }
+  if (!SUPABASE_SERVICE_ROLE_KEY) {
+    return json(res, 500, { error: 'SUPABASE_SERVICE_ROLE_KEY not configured' });
+  }
+
+  let days = 30;
+  try {
+    const url = new URL(req.url, 'http://localhost');
+    days = Math.min(90, Math.max(1, Number(url.searchParams.get('days') || 30)));
+  } catch {
+    days = 30;
+  }
+
+  const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  const list = await supabaseSelect(since);
+  const text = await list.text();
+
+  if (!list.ok) {
+    return json(res, 502, {
+      error: 'query failed',
+      detail: text.slice(0, 300),
+      hint: 'Check SUPABASE_SERVICE_ROLE_KEY is the service_role secret from the wavelet project',
+    });
+  }
+
+  let rows;
+  try {
+    rows = JSON.parse(text);
+  } catch {
+    return json(res, 502, { error: 'invalid supabase response', detail: text.slice(0, 300) });
+  }
+
+  if (!Array.isArray(rows)) {
+    return json(res, 502, { error: 'unexpected supabase response', detail: text.slice(0, 300) });
+  }
+
+  return json(res, 200, { days, ...summarize(rows) });
 }
 
 module.exports = async function handler(req, res) {
@@ -164,6 +198,11 @@ module.exports = async function handler(req, res) {
     return json(res, 405, { error: 'method not allowed' });
   } catch (err) {
     console.error(err);
-    return json(res, 500, { error: 'server error' });
+    return json(res, 500, {
+      error: 'server error',
+      detail: String(err && err.message ? err.message : err).slice(0, 200),
+    });
   }
 };
+
+module.exports.summarize = summarize;
