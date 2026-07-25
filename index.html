@@ -1450,7 +1450,7 @@
 
         // All geometry is in units of 1% of the board's width, so a layout can
         // be re-projected to pixels on resize without re-packing.
-        const SPAN = [20, 30, 42];   // base width per stored scale
+        const SPAN = [10, 15, 21];   // base width per stored scale (~half prior)
         const GAP = 2;               // clear space kept between doodles
         const DARTS = 120;
 
@@ -1500,7 +1500,7 @@
 
         function packOne(entry) {
             const scale = Math.min(Math.max(Number(entry.row.scale) || 0, 0), 2);
-            const w = Math.min(Math.max(SPAN[scale] * entry.built.bw * spanBoost(), 9), 68);
+            const w = Math.min(Math.max(SPAN[scale] * entry.built.bw * spanBoost(), 5), 34);
             const h = w * (entry.built.bh / entry.built.bw);
             const maxX = Math.max(100 - w, 0);
             // Aim anywhere in the sheet on show; once that's full, anywhere in
@@ -1562,7 +1562,7 @@
 
             packed = [];
             frontier = 0;
-            dart = mulberry32(0xd0d1e);
+            dart = mulberry32(0xb07a1d);
             entries.forEach(packOne);
             applyLayout();
         }
