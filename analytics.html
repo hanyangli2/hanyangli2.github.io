@@ -171,6 +171,18 @@
             <p class="hint">events per day</p>
             <div class="chart-wrap" id="daily-chart"></div>
 
+            <h2>where they're from</h2>
+            <p class="hint">country (from Vercel edge · no raw IP stored)</p>
+            <div id="country-bars"></div>
+
+            <h2>device</h2>
+            <p class="hint">mobile / desktop / tablet</p>
+            <div id="device-bars"></div>
+
+            <h2>os</h2>
+            <p class="hint">operating system from user-agent</p>
+            <div id="os-bars"></div>
+
             <h2>where people go</h2>
             <p class="hint">paper opens on the desk</p>
             <div id="paper-bars"></div>
@@ -186,7 +198,7 @@
 
             <h2>recent</h2>
             <table>
-                <thead><tr><th>when</th><th>event</th><th>props</th></tr></thead>
+                <thead><tr><th>when</th><th>event</th><th>where</th><th>device</th><th>props</th></tr></thead>
                 <tbody id="recent"></tbody>
             </table>
 
@@ -238,36 +250,48 @@
             const series = fillDailySeries(daily, days);
             const max = Math.max(1, ...series.map((d) => d.count));
             const w = 760;
-            const h = 160;
+            const h = 180;
             const padL = 28;
-            const padR = 8;
-            const padT = 12;
-            const padB = 28;
+            const padR = 12;
+            const padT = 16;
+            const padB = 30;
             const innerW = w - padL - padR;
             const innerH = h - padT - padB;
-            const gap = series.length > 40 ? 1 : 2;
-            const barW = Math.max(2, (innerW - gap * (series.length - 1)) / series.length);
+            const step = series.length === 1 ? 0 : innerW / (series.length - 1);
 
-            const bars = series.map((d, i) => {
-                const bh = (d.count / max) * innerH;
-                const x = padL + i * (barW + gap);
-                const y = padT + innerH - bh;
-                const title = `${d.day}: ${d.count}`;
-                return `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${Math.max(bh, d.count ? 2 : 0).toFixed(1)}" fill="${d.count ? '#6b4c2a' : 'rgba(107,76,42,0.12)'}"><title>${escapeHtml(title)}</title></rect>`;
+            const points = series.map((d, i) => {
+                const x = padL + i * step;
+                const y = padT + innerH - (d.count / max) * innerH;
+                return [x, y, d];
+            });
+
+            const line = points
+                .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`)
+                .join(' ');
+
+            const area = `${line} L${(padL + innerW).toFixed(1)},${(padT + innerH).toFixed(1)} L${padL.toFixed(1)},${(padT + innerH).toFixed(1)} Z`;
+
+            const dots = points.map(([x, y, d]) => {
+                if (!d.count && days > 14) return '';
+                return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${d.count ? 3.2 : 2}" fill="${d.count ? '#6b4c2a' : 'rgba(107,76,42,0.25)'}"><title>${escapeHtml(d.day)}: ${d.count}</title></circle>`;
             }).join('');
 
             const labelIdx = [0, Math.floor((series.length - 1) / 2), series.length - 1];
             const labels = [...new Set(labelIdx)].map((i) => {
-                const d = series[i];
-                const x = padL + i * (barW + gap) + barW / 2;
-                const label = d.day.slice(5); // MM-DD
-                return `<text x="${x.toFixed(1)}" y="${h - 8}" text-anchor="middle" fill="#6b6b6b" font-size="12" font-family="HarryHand, Georgia, serif">${label}</text>`;
+                const [x, , d] = points[i];
+                return `<text x="${x.toFixed(1)}" y="${h - 8}" text-anchor="middle" fill="#6b6b6b" font-size="12" font-family="HarryHand, Georgia, serif">${d.day.slice(5)}</text>`;
             }).join('');
 
             const yMax = `<text x="0" y="${padT + 4}" fill="#6b6b6b" font-size="12" font-family="HarryHand, Georgia, serif">${max}</text>`;
+            const baseline = `<line x1="${padL}" y1="${padT + innerH}" x2="${padL + innerW}" y2="${padT + innerH}" stroke="rgba(107,76,42,0.2)" stroke-width="1" />`;
 
             document.getElementById('daily-chart').innerHTML =
-                `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="events per day">${yMax}${bars}${labels}</svg>`;
+                `<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="events per day line chart">
+                    ${baseline}
+                    <path d="${area}" fill="rgba(107,76,42,0.12)"></path>
+                    <path d="${line}" fill="none" stroke="#6b4c2a" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"></path>
+                    ${dots}${yMax}${labels}
+                </svg>`;
         }
 
         function renderBars(map, el) {
@@ -337,6 +361,9 @@
             document.getElementById('essays').textContent = data.byName.essay_open || 0;
 
             renderDailyChart(data.daily, data.days);
+            renderBars(data.byCountry, document.getElementById('country-bars'));
+            renderBars(data.byDevice, document.getElementById('device-bars'));
+            renderBars(data.byOs, document.getElementById('os-bars'));
             renderBars(data.byPaper, document.getElementById('paper-bars'));
             renderBars(data.byEssay, document.getElementById('essay-bars'));
             renderMix(data.byName);
@@ -345,8 +372,16 @@
             recent.innerHTML = (data.recent || []).map((row) => {
                 const when = new Date(row.created_at).toLocaleString();
                 const props = row.props ? JSON.stringify(row.props) : '';
-                return `<tr><td>${escapeHtml(when)}</td><td><code>${escapeHtml(row.name)}</code></td><td>${escapeHtml(props)}</td></tr>`;
-            }).join('') || '<tr><td colspan="3">none yet</td></tr>';
+                const where = [row.city, row.country].filter(Boolean).join(', ') || '—';
+                const device = [row.device, row.os].filter(Boolean).join(' · ') || '—';
+                return `<tr>
+                    <td>${escapeHtml(when)}</td>
+                    <td><code>${escapeHtml(row.name)}</code></td>
+                    <td>${escapeHtml(where)}</td>
+                    <td>${escapeHtml(device)}</td>
+                    <td>${escapeHtml(props)}</td>
+                </tr>`;
+            }).join('') || '<tr><td colspan="5">none yet</td></tr>';
 
             localStorage.setItem(KEY, password);
             gate.classList.add('hidden');

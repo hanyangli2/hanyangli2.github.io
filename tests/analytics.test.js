@@ -52,16 +52,43 @@ describe('first-party analytics wiring', () => {
 });
 
 describe('summarize', () => {
-  it('aggregates papers and essays', () => {
+  it('aggregates papers, essays, country, and device', () => {
     const { summarize } = require('../api/analytics.js');
     const out = summarize([
-      { name: 'page_view', created_at: '2026-07-25T00:00:00Z', session_id: 'a', props: {} },
-      { name: 'paper_open', created_at: '2026-07-25T00:00:00Z', session_id: 'a', props: { paper: 'writings' } },
-      { name: 'essay_open', created_at: '2026-07-25T00:00:00Z', session_id: 'b', props: { slug: 'surveiled' } },
+      { name: 'page_view', created_at: '2026-07-25T00:00:00Z', session_id: 'a', props: {}, country: 'US', device: 'mobile', os: 'ios' },
+      { name: 'paper_open', created_at: '2026-07-25T00:00:00Z', session_id: 'a', props: { paper: 'writings' }, country: 'US', device: 'mobile', os: 'ios' },
+      { name: 'essay_open', created_at: '2026-07-25T00:00:00Z', session_id: 'b', props: { slug: 'surveiled' }, country: 'CA', device: 'desktop', os: 'mac' },
     ]);
     assert.equal(out.totalEvents, 3);
     assert.equal(out.uniqueSessions, 2);
     assert.equal(out.byPaper.writings, 1);
     assert.equal(out.byEssay.surveiled, 1);
+    assert.equal(out.byCountry.US, 2);
+    assert.equal(out.byDevice.mobile, 2);
+    assert.equal(out.byOs.mac, 1);
+  });
+});
+
+describe('ua helpers', () => {
+  it('classifies device and os', () => {
+    const { deviceFromUa, osFromUa, geoFromHeaders } = require('../api/_lib/ua.js');
+    assert.equal(deviceFromUa('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'), 'mobile');
+    assert.equal(osFromUa('Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)'), 'ios');
+    assert.equal(deviceFromUa('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'), 'desktop');
+    assert.equal(osFromUa('Mozilla/5.0 (Windows NT 10.0; Win64; x64)'), 'windows');
+    assert.deepEqual(
+      geoFromHeaders({ 'x-vercel-ip-country': 'US', 'x-vercel-ip-city': 'Boston' }),
+      { country: 'US', city: 'Boston' }
+    );
+  });
+});
+
+describe('dashboard visuals', () => {
+  it('uses a line chart and shows geo/device sections', () => {
+    const html = readFileSync(join(root, 'analytics.html'), 'utf8');
+    assert.match(html, /stroke-linejoin="round"/);
+    assert.match(html, /country-bars/);
+    assert.match(html, /device-bars/);
+    assert.match(html, /os-bars/);
   });
 });

@@ -1,7 +1,7 @@
 const { sanitizeEvent } = require('./_lib/sanitize');
+const { deviceFromUa, osFromUa, geoFromHeaders } = require('./_lib/ua');
 
 const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://ypsmbieyrilvruiivhdu.supabase.co').replace(/\/$/, '');
-// Same public anon key already embedded for doodles; override via env if rotated.
 const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlwc21iaWV5cmlsdnJ1aWl2aGR1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk4MzgyMDUsImV4cCI6MjA2NTQxNDIwNX0.KIF9sokSNOhjCAQhUhopD9Wfl55TlN_NDcINWdALFSw').trim();
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 const ANALYTICS_PASSWORD = (process.env.ANALYTICS_PASSWORD || '').trim();
@@ -16,6 +16,11 @@ function json(res, status, payload) {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.end(JSON.stringify(payload));
+}
+
+function bump(map, key) {
+  if (!key) return;
+  map[key] = (map[key] || 0) + 1;
 }
 
 async function supabaseInsert(event) {
@@ -35,7 +40,7 @@ async function supabaseSelect(sinceIso) {
   const url = new URL(`${SUPABASE_URL}/rest/v1/analytics_events`);
   url.searchParams.set(
     'select',
-    'id,created_at,name,props,path,session_id'
+    'id,created_at,name,props,path,session_id,country,city,device,os'
   );
   url.searchParams.set('created_at', `gte.${sinceIso}`);
   url.searchParams.set('order', 'created_at.desc');
@@ -67,21 +72,28 @@ function summarize(rows) {
   const byName = {};
   const byPaper = {};
   const byEssay = {};
+  const byCountry = {};
+  const byDevice = {};
+  const byOs = {};
   const sessions = new Set();
   const daysMap = {};
 
   for (const row of rows) {
-    byName[row.name] = (byName[row.name] || 0) + 1;
+    bump(byName, row.name);
     if (row.session_id) sessions.add(row.session_id);
 
     const day = String(row.created_at).slice(0, 10);
     daysMap[day] = (daysMap[day] || 0) + 1;
 
+    bump(byCountry, row.country || 'unknown');
+    bump(byDevice, row.device || 'unknown');
+    bump(byOs, row.os || 'unknown');
+
     if (row.name === 'paper_open' && row.props && row.props.paper) {
-      byPaper[row.props.paper] = (byPaper[row.props.paper] || 0) + 1;
+      bump(byPaper, row.props.paper);
     }
     if (row.name === 'essay_open' && row.props && row.props.slug) {
-      byEssay[row.props.slug] = (byEssay[row.props.slug] || 0) + 1;
+      bump(byEssay, row.props.slug);
     }
   }
 
@@ -91,8 +103,22 @@ function summarize(rows) {
     byName,
     byPaper,
     byEssay,
+    byCountry,
+    byDevice,
+    byOs,
     daily: daysMap,
     recent: rows.slice(0, 50),
+  };
+}
+
+function enrichEvent(event, req) {
+  const { country, city } = geoFromHeaders(req.headers || {});
+  return {
+    ...event,
+    country: country ? String(country).slice(0, 8) : null,
+    city: city ? String(city).slice(0, 64) : null,
+    device: deviceFromUa(event.ua),
+    os: osFromUa(event.ua),
   };
 }
 
@@ -133,7 +159,7 @@ async function handlePost(req, res) {
   const { event, error } = sanitizeEvent(body);
   if (error) return json(res, 400, { error });
 
-  const insert = await supabaseInsert(event);
+  const insert = await supabaseInsert(enrichEvent(event, req));
   if (!insert.ok) {
     const text = await insert.text();
     return json(res, 502, { error: 'insert failed', detail: text.slice(0, 300) });
@@ -206,3 +232,4 @@ module.exports = async function handler(req, res) {
 };
 
 module.exports.summarize = summarize;
+module.exports.enrichEvent = enrichEvent;
