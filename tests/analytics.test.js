@@ -247,7 +247,7 @@ describe('summarize', () => {
         name: 'outbound_click',
         created_at: '2026-07-25T00:00:05Z',
         session_id: 'r2',
-        props: { host: 'bigstack.io', label: 'bigstack.io' },
+        props: { host: 'example.com', label: 'example.com' },
       },
     ]);
     assert.equal(out.essayDepth.surveiled.opens, 2);
@@ -255,7 +255,7 @@ describe('summarize', () => {
     assert.equal(out.essayDepth.surveiled.finished, 1);
     assert.equal(out.essayDepthAvg.surveiled, 63);
     assert.equal(out.byOutbound.eyeball, 2);
-    assert.equal(out.byOutbound['bigstack.io'], 1);
+    assert.equal(out.byOutbound['example.com'], 1);
   });
 
   it('paginates recent events with hasMore metadata', () => {
