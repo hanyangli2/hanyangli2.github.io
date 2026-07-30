@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /archive/
+Disallow: /api/
+
+Sitemap: https://harryliwastaken.com/sitemap.xml
