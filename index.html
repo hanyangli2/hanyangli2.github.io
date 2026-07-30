@@ -189,6 +189,12 @@
             .world { transition: none; }
         }
 
+        /* The picture wrapper must not introduce an inline line box, or the
+           container grows past the artwork and the hotspots drift. */
+        .portrait-container picture {
+            display: block;
+        }
+
         .portrait-image {
             width: 100%;
             height: auto;
