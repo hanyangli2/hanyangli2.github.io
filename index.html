@@ -3,8 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hanyang Li</title>
-    <link rel="icon" type="image/png" href="header.png">
+    <title>Hanyang Li (Harry) — iOS Engineer, NYC</title>
+    <meta name="description" content="Hanyang (Harry) Li is an iOS software engineer in New York City. Apps — Dogear, Ranked, Wavelet, Last Times — plus essays, projects, and poker.">
+    <link rel="canonical" href="https://harryliwastaken.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hanyang Li (Harry) — iOS Engineer, NYC">
+    <meta property="og:description" content="Hanyang (Harry) Li is an iOS software engineer in New York City. Apps — Dogear, Ranked, Wavelet, Last Times — plus essays, projects, and poker.">
+    <meta property="og:url" content="https://harryliwastaken.com/">
+    <meta property="og:site_name" content="Hanyang Li">
+    <meta property="og:image" content="https://harryliwastaken.com/me.jpg">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -177,6 +187,12 @@
         @media (prefers-reduced-motion: reduce) {
             .portrait-container { animation: none; }
             .world { transition: none; }
+        }
+
+        /* The picture wrapper must not introduce an inline line box, or the
+           container grows past the artwork and the hotspots drift. */
+        .portrait-container picture {
+            display: block;
         }
 
         .portrait-image {
@@ -365,7 +381,7 @@
             transform: rotate(var(--sheet-rx));
         }
 
-        .sheet h1 {
+        .sheet .sheet-title {
             font-family: 'HarryHand', 'Times New Roman', Times, serif;
             font-weight: 500;
             font-size: 12px;
@@ -446,7 +462,7 @@
             line-height: 1.2;
             margin-bottom: 4px;
             color: #1a1a1a;
-            /* Override the .sheet h1 letterhead style for the essay title. */
+            /* Keep the essay title distinct from the .sheet-title letterhead style. */
             text-transform: none;
             letter-spacing: 0;
             border-bottom: none;
@@ -576,7 +592,7 @@
         }
 
         /* Reserve room so a wrapping title never runs under the button. */
-        .sheet-doodles h1 {
+        .sheet-doodles .sheet-title {
             margin-bottom: 0;
             padding-right: 84px;
         }
@@ -746,7 +762,7 @@
                 min-height: 70vh;
                 max-height: 80vh;
             }
-            .sheet h1 { font-size: 24px; }
+            .sheet .sheet-title { font-size: 24px; }
 
             /* Shift the world up so back links don't sit under the iOS
                Safari bottom toolbar / home indicator. */
@@ -778,6 +794,30 @@
     </style>
     <script type="module" src="assets/track.js"></script>
     <script defer src="/_vercel/insights/script.js"></script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": "https://harryliwastaken.com/#person",
+      "name": "Hanyang Li",
+      "alternateName": ["Harry Li", "Hanyang \"Harry\" Li"],
+      "jobTitle": "iOS Software Engineer",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "New York",
+        "addressRegion": "NY",
+        "addressCountry": "US"
+      },
+      "url": "https://harryliwastaken.com/",
+      "image": "https://harryliwastaken.com/me.jpg",
+      "email": "hanyangli003@gmail.com",
+      "sameAs": [
+        "https://www.linkedin.com/in/hanyangli2",
+        "https://x.com/bigherb888",
+        "https://github.com/hanyangli2"
+      ]
+    }
+    </script>
 </head>
 <body data-page="home">
     <div class="world">
@@ -787,29 +827,32 @@
         <!-- Home paper -->
         <div class="paper paper-home active">
             <div class="portrait-container">
-                <img src="me.png" alt="Interactive portrait" class="portrait-image">
+                <picture>
+                    <source srcset="me.webp" type="image/webp">
+                    <img src="me.jpg" alt="Hand-drawn self-portrait of Hanyang (Harry) Li at his desk" class="portrait-image" width="1122" height="1402" fetchpriority="high">
+                </picture>
 
                 <a href="https://x.com/bigherb888" class="hotspot bird" data-label="twitter" target="_blank" rel="noopener noreferrer"></a>
                 <a href="#ios"       class="hotspot apple"    data-label="ios"       data-pan="ios"></a>
-                <a href="#writings"  class="hotspot notebook" data-label="writings"  data-pan="writings"></a>
+                <a href="/writings"  class="hotspot notebook" data-label="writings"  data-pan="writings"></a>
                 <a href="https://linkedin.com/in/hanyangli2" class="hotspot linkedin" data-label="linkedin" target="_blank" rel="noopener noreferrer"></a>
-                <a href="#poker"     class="hotspot card"     data-label="poker"     data-pan="poker"></a>
-                <a href="#projects"  class="hotspot cat"      data-label="cool stuff" data-pan="projects"></a>
+                <a href="/poker"     class="hotspot card"     data-label="poker"     data-pan="poker"></a>
+                <a href="/projects"  class="hotspot cat"      data-label="cool stuff" data-pan="projects"></a>
 
                 <a href="#doodles" class="doodle-hint" data-pan="doodles">doodle board</a>
 
                 <button type="button" class="hotspot secret" id="secret" data-label="secret button" aria-label="secret button"></button>
 
                 <div class="info">
-                    <div class="name">hanyang "harry" li</div>
+                    <h1 class="name">hanyang "harry" li</h1>
                     <div class="title">ios software engineer</div>
                     <div class="location">based in nyc</div>
                     <div class="nav-index">
                         <a href="https://linkedin.com/in/hanyangli2" target="_blank" rel="noopener noreferrer"><span class="num">01</span>linkedin</a><br>
                         <a href="#ios"      data-pan="ios"><span class="num">02</span>ios</a><br>
-                        <a href="#writings" data-pan="writings"><span class="num">03</span>writings</a><br>
-                        <a href="#projects" data-pan="projects"><span class="num">04</span>cool stuff</a><br>
-                        <a href="#poker"    data-pan="poker"><span class="num">05</span>poker</a><br>
+                        <a href="/writings" data-pan="writings"><span class="num">03</span>writings</a><br>
+                        <a href="/projects" data-pan="projects"><span class="num">04</span>cool stuff</a><br>
+                        <a href="/poker"    data-pan="poker"><span class="num">05</span>poker</a><br>
                         <a href="https://x.com/bigherb888" target="_blank" rel="noopener noreferrer"><span class="num">06</span>twitter</a>
                     </div>
                     <div class="email"><a href="mailto:hanyangli003@gmail.com">hanyangli003@gmail.com</a></div>
@@ -822,38 +865,38 @@
             <div class="sheet sheet-rotate" style="--sheet-rx: -1.4deg;">
                 <div class="writings-content" id="writings-content">
                     <div class="writings-list" id="writings-list">
-                        <h1>Writings</h1>
+                        <h2 class="sheet-title">Writings</h2>
                         <div class="sheet-list">
                             <div class="sheet-item">
-                                <a href="#writings/liking-something-essay" data-essay="liking-something-essay">
+                                <a href="/liking-something-essay" data-essay="liking-something-essay">
                                     <h2>patchwork of one's self</h2>
                                 </a>
                             </div>
                             <div class="sheet-item">
-                                <a href="#writings/i-will-be-goop" data-essay="i-will-be-goop">
+                                <a href="/i-will-be-goop" data-essay="i-will-be-goop">
                                     <h2>i will be goop</h2>
                                 </a>
                             </div>
                             <div class="sheet-item">
-                                <a href="#writings/the-carousel" data-essay="the-carousel">
+                                <a href="/the-carousel" data-essay="the-carousel">
                                     <h2>the carousel</h2>
                                 </a>
                             </div>
                             <div class="sheet-item">
-                                <a href="#writings/surveiled" data-essay="surveiled">
+                                <a href="/surveiled" data-essay="surveiled">
                                     <h2>surveiled</h2>
                                 </a>
                             </div>
                         </div>
-                        <div class="back"><a href="#" data-pan="home">← back to desk</a></div>
+                        <div class="back"><a href="/" data-pan="home">← back to desk</a></div>
                     </div>
                     <div class="essay-view" id="writings-essay">
-                        <h1 class="essay-title" id="essay-title"></h1>
+                        <h2 class="essay-title" id="essay-title"></h2>
                         <div class="essay-date" id="essay-date"></div>
                         <div class="essay-body" id="essay-body"></div>
                         <div class="back" style="display: flex; justify-content: space-between;">
-                            <a href="#writings" data-essay-back style="text-align: left;">← back to writings</a>
-                            <a href="#" data-pan="home">← back to desk</a>
+                            <a href="/writings" data-essay-back style="text-align: left;">← back to writings</a>
+                            <a href="/" data-pan="home">← back to desk</a>
                         </div>
                     </div>
                 </div>
@@ -863,7 +906,7 @@
         <!-- iOS paper -->
         <div class="paper paper-ios">
             <div class="sheet sheet-rotate" style="--sheet-rx: 1.7deg;">
-                <h1>Mobile Apps</h1>
+                <h2 class="sheet-title">Mobile Apps</h2>
                 <div class="sheet-list">
                     <div class="sheet-item">
                         <a href="/dogear/">
@@ -896,14 +939,14 @@
                         </a>
                     </div>
                 </div>
-                <div class="back"><a href="#" data-pan="home">← back to desk</a></div>
+                <div class="back"><a href="/" data-pan="home">← back to desk</a></div>
             </div>
         </div>
 
         <!-- Poker paper -->
         <div class="paper paper-poker">
             <div class="sheet sheet-rotate" style="--sheet-rx: -2.2deg;">
-                <h1>Poker</h1>
+                <h2 class="sheet-title">Poker</h2>
                 <div class="sheet-list">
                     <div class="sheet-item">
                         <p>co-founded the <a href="https://www.uvapoker.club/" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">virginia poker club</a></p>
@@ -912,14 +955,14 @@
                         <p>co-founded the university of virginia <a href="https://pokeripa.com/standings-2024/" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">intercollegiate poker team</a></p>
                     </div>
                 </div>
-                <div class="back"><a href="#" data-pan="home">← back to desk</a></div>
+                <div class="back"><a href="/" data-pan="home">← back to desk</a></div>
             </div>
         </div>
 
         <!-- Projects paper -->
         <div class="paper paper-projects">
             <div class="sheet sheet-rotate" style="--sheet-rx: 1.2deg;">
-                <h1>Cool Projects</h1>
+                <h2 class="sheet-title">Cool Projects</h2>
                 <p class="lede">some cool stuff im proud of</p>
                 <div class="sheet-list">
                     <div class="sheet-item">
@@ -954,8 +997,15 @@
                             <div class="meta">Best Health Hack Winner · HooHacks 2023</div>
                         </a>
                     </div>
+                    <div class="sheet-item">
+                        <a href="/research">
+                            <h2>research</h2>
+                            <p>financial contagion modeling and NLP for an ai ems assistant</p>
+                            <div class="meta">UVA Biocomplexity Institute · UVA Link Lab</div>
+                        </a>
+                    </div>
                 </div>
-                <div class="back"><a href="#" data-pan="home">← back to desk</a></div>
+                <div class="back"><a href="/" data-pan="home">← back to desk</a></div>
             </div>
         </div>
 
@@ -963,13 +1013,13 @@
         <div class="paper paper-doodles">
             <div class="sheet sheet-doodles sheet-rotate" style="--sheet-rx: 0.7deg;" id="board-sheet">
                 <div class="board-head">
-                    <h1>Doodle Board</h1>
+                    <h2 class="sheet-title">Doodle Board</h2>
                     <button class="add-doodle" id="add-doodle">+ draw</button>
                 </div>
                 <div class="board" id="board">
                     <div class="board-status">loading the board…</div>
                 </div>
-                <div class="back"><a href="#" data-pan="home">← back to desk</a></div>
+                <div class="back"><a href="/" data-pan="home">← back to desk</a></div>
             </div>
         </div>
 
@@ -1236,6 +1286,11 @@
                     } catch (_) { /* ignore bad urls */ }
                 }
             }
+
+            // Modified clicks (cmd/ctrl/shift/alt, non-primary button) should
+            // follow the real URL — open in new tab, download, etc. — instead
+            // of being swallowed by the SPA pan.
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
             // 1) essay link → load essay inline, update hash to #writings/<slug>
             const essayLink = e.target.closest('[data-essay]');

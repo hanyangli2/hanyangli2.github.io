@@ -1,0 +1,23 @@
+{
+  "cleanUrls": true,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "harryli.xyz" }],
+      "destination": "https://harryliwastaken.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.harryli.xyz" }],
+      "destination": "https://harryliwastaken.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "www.harryliwastaken.com" }],
+      "destination": "https://harryliwastaken.com/:path*",
+      "permanent": true
+    }
+  ]
+}

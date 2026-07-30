@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>surveiled - Hanyang Li</title>
-    <link rel="icon" type="image/png" href="header.png">
+    <meta name="description" content="A short poem by Hanyang (Harry) Li about being watched and mimicked, and performing the version of yourself that survives.">
+    <link rel="canonical" href="https://harryliwastaken.com/surveiled">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="surveiled">
+    <meta property="og:description" content="A short poem by Hanyang (Harry) Li about being watched and mimicked, and performing the version of yourself that survives.">
+    <meta property="og:url" content="https://harryliwastaken.com/surveiled">
+    <meta property="og:site_name" content="Hanyang Li">
+    <meta name="twitter:card" content="summary">
+    <link rel="icon" type="image/png" href="/assets/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @font-face {
@@ -27,12 +35,37 @@
         }
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
+    <script type="module">
+        import { trackEvent } from '/assets/track.js';
+        trackEvent('page_view', { paper: 'writings' });
+        trackEvent('essay_open', { slug: 'surveiled' });
+    </script>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      "headline": "surveiled",
+      "description": "A short poem by Hanyang (Harry) Li about being watched and mimicked, and performing the version of yourself that survives.",
+      "url": "https://harryliwastaken.com/surveiled",
+      "datePublished": "2026-05-21",
+      "mainEntityOfPage": "https://harryliwastaken.com/surveiled",
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "@id": "https://harryliwastaken.com/#person",
+        "name": "Hanyang Li",
+        "alternateName": "Harry Li",
+        "url": "https://harryliwastaken.com/"
+      }
+    }
+    </script>
 </head>
 <body class="bg-[#FDF4E9] text-neutral-900 font-elegant min-h-screen flex flex-col items-center justify-center p-6">
     <main class="text-center max-w-4xl">
         <!-- Header -->
         <div class="mb-12">
             <h1 class="text-2xl md:text-3xl font-light mb-2">surveiled</h1>
+            <p class="text-neutral-500 text-sm italic">may 2026</p>
         </div>
 
         <!-- Essay Content -->
@@ -48,7 +81,7 @@
 
         <!-- Back Link -->
         <div class="mt-16">
-            <a href="writings.html" class="text-neutral-500 hover:text-neutral-900 transition-colors text-sm">← back to writings</a>
+            <a href="/writings" class="text-neutral-500 hover:text-neutral-900 transition-colors text-sm">← back to writings</a>
         </div>
     </main>
 </body>
