@@ -18,6 +18,10 @@
 <meta name="twitter:description" content="A real shelf, honest head-to-head ratings, notes that trace how a book made you feel, and the lines worth keeping.">
 
 <script defer src="/_vercel/insights/script.js"></script>
+<script type="module">
+    import { trackEvent } from '/assets/track.js';
+    trackEvent('page_view', { paper: 'dogear' });
+</script>
 <style>
   :root {
     --paper: #F6F4F0;
