@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Poker - Hanyang Li</title>
     <meta name="description" content="Hanyang (Harry) Li co-founded the Virginia Poker Club and the University of Virginia intercollegiate poker team.">
-    <link rel="canonical" href="https://harryliwastaken.com/poker">
+    <link rel="canonical" href="https://harryliwastaken.com/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Poker - Hanyang Li">
     <meta property="og:description" content="Hanyang (Harry) Li co-founded the Virginia Poker Club and the University of Virginia intercollegiate poker team.">
-    <meta property="og:url" content="https://harryliwastaken.com/poker">
+    <meta property="og:url" content="https://harryliwastaken.com/">
     <meta property="og:site_name" content="Hanyang Li">
     <meta name="twitter:card" content="summary">
     <link rel="icon" type="image/png" href="/assets/favicon.png">
@@ -35,6 +35,10 @@
         }
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
+    <script type="module">
+        import { trackEvent } from '/assets/track.js';
+        trackEvent('page_view', { paper: 'poker' });
+    </script>
 </head>
 <body class="bg-[#FDF4E9] text-neutral-900 font-elegant min-h-screen flex flex-col items-center justify-center p-6">
     <main class="text-center max-w-2xl">

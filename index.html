@@ -375,7 +375,7 @@
             transform: rotate(var(--sheet-rx));
         }
 
-        .sheet h1 {
+        .sheet .sheet-title {
             font-family: 'HarryHand', 'Times New Roman', Times, serif;
             font-weight: 500;
             font-size: 12px;
@@ -586,7 +586,7 @@
         }
 
         /* Reserve room so a wrapping title never runs under the button. */
-        .sheet-doodles h1 {
+        .sheet-doodles .sheet-title {
             margin-bottom: 0;
             padding-right: 84px;
         }
@@ -756,7 +756,7 @@
                 min-height: 70vh;
                 max-height: 80vh;
             }
-            .sheet h1 { font-size: 24px; }
+            .sheet .sheet-title { font-size: 24px; }
 
             /* Shift the world up so back links don't sit under the iOS
                Safari bottom toolbar / home indicator. */
@@ -792,6 +792,7 @@
     {
       "@context": "https://schema.org",
       "@type": "Person",
+      "@id": "https://harryliwastaken.com/#person",
       "name": "Hanyang Li",
       "alternateName": ["Harry Li", "Hanyang \"Harry\" Li"],
       "jobTitle": "iOS Software Engineer",
@@ -803,9 +804,9 @@
       },
       "url": "https://harryliwastaken.com/",
       "image": "https://harryliwastaken.com/me.jpg",
-      "email": "mailto:hanyangli003@gmail.com",
+      "email": "hanyangli003@gmail.com",
       "sameAs": [
-        "https://linkedin.com/in/hanyangli2",
+        "https://www.linkedin.com/in/hanyangli2",
         "https://x.com/bigherb888",
         "https://github.com/hanyangli2"
       ]
@@ -820,7 +821,10 @@
         <!-- Home paper -->
         <div class="paper paper-home active">
             <div class="portrait-container">
-                <img src="me.webp" alt="Hand-drawn self-portrait of Hanyang (Harry) Li at his desk" class="portrait-image">
+                <picture>
+                    <source srcset="me.webp" type="image/webp">
+                    <img src="me.jpg" alt="Hand-drawn self-portrait of Hanyang (Harry) Li at his desk" class="portrait-image" width="1122" height="1402" fetchpriority="high">
+                </picture>
 
                 <a href="https://x.com/bigherb888" class="hotspot bird" data-label="twitter" target="_blank" rel="noopener noreferrer"></a>
                 <a href="#ios"       class="hotspot apple"    data-label="ios"       data-pan="ios"></a>
@@ -855,7 +859,7 @@
             <div class="sheet sheet-rotate" style="--sheet-rx: -1.4deg;">
                 <div class="writings-content" id="writings-content">
                     <div class="writings-list" id="writings-list">
-                        <h1>Writings</h1>
+                        <h2 class="sheet-title">Writings</h2>
                         <div class="sheet-list">
                             <div class="sheet-item">
                                 <a href="/liking-something-essay" data-essay="liking-something-essay">
@@ -881,7 +885,7 @@
                         <div class="back"><a href="/" data-pan="home">← back to desk</a></div>
                     </div>
                     <div class="essay-view" id="writings-essay">
-                        <h1 class="essay-title" id="essay-title"></h1>
+                        <h2 class="essay-title" id="essay-title"></h2>
                         <div class="essay-date" id="essay-date"></div>
                         <div class="essay-body" id="essay-body"></div>
                         <div class="back" style="display: flex; justify-content: space-between;">
@@ -896,7 +900,7 @@
         <!-- iOS paper -->
         <div class="paper paper-ios">
             <div class="sheet sheet-rotate" style="--sheet-rx: 1.7deg;">
-                <h1>Mobile Apps</h1>
+                <h2 class="sheet-title">Mobile Apps</h2>
                 <div class="sheet-list">
                     <div class="sheet-item">
                         <a href="/dogear/">
@@ -936,7 +940,7 @@
         <!-- Poker paper -->
         <div class="paper paper-poker">
             <div class="sheet sheet-rotate" style="--sheet-rx: -2.2deg;">
-                <h1>Poker</h1>
+                <h2 class="sheet-title">Poker</h2>
                 <div class="sheet-list">
                     <div class="sheet-item">
                         <p>co-founded the <a href="https://www.uvapoker.club/" target="_blank" rel="noopener noreferrer" style="text-decoration: underline;">virginia poker club</a></p>
@@ -952,7 +956,7 @@
         <!-- Projects paper -->
         <div class="paper paper-projects">
             <div class="sheet sheet-rotate" style="--sheet-rx: 1.2deg;">
-                <h1>Cool Projects</h1>
+                <h2 class="sheet-title">Cool Projects</h2>
                 <p class="lede">some cool stuff im proud of</p>
                 <div class="sheet-list">
                     <div class="sheet-item">
@@ -987,6 +991,13 @@
                             <div class="meta">Best Health Hack Winner · HooHacks 2023</div>
                         </a>
                     </div>
+                    <div class="sheet-item">
+                        <a href="/research">
+                            <h2>research</h2>
+                            <p>financial contagion modeling and NLP for an ai ems assistant</p>
+                            <div class="meta">UVA Biocomplexity Institute · UVA Link Lab</div>
+                        </a>
+                    </div>
                 </div>
                 <div class="back"><a href="/" data-pan="home">← back to desk</a></div>
             </div>
@@ -996,7 +1007,7 @@
         <div class="paper paper-doodles">
             <div class="sheet sheet-doodles sheet-rotate" style="--sheet-rx: 0.7deg;" id="board-sheet">
                 <div class="board-head">
-                    <h1>Doodle Board</h1>
+                    <h2 class="sheet-title">Doodle Board</h2>
                     <button class="add-doodle" id="add-doodle">+ draw</button>
                 </div>
                 <div class="board" id="board">
@@ -1269,6 +1280,11 @@
                     } catch (_) { /* ignore bad urls */ }
                 }
             }
+
+            // Modified clicks (cmd/ctrl/shift/alt, non-primary button) should
+            // follow the real URL — open in new tab, download, etc. — instead
+            // of being swallowed by the SPA pan.
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
 
             // 1) essay link → load essay inline, update hash to #writings/<slug>
             const essayLink = e.target.closest('[data-essay]');
