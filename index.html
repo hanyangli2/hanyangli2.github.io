@@ -253,12 +253,12 @@
         .card     { top: 24%; right: 6%;  width: 22%; height: 18%; }
         .cat      { top: 55%; left: 14%;  width: 34%; height: 38%; }
 
-        /* Mirrors the doodle-board link in the opposite corner. Invisible by
-           design — it inherits .hotspot's transparent fill, so it only ever
-           announces itself through the cursor label (or in debug mode). */
+        /* Mirrors Bart in the opposite corner. Invisible by design — it
+           inherits .hotspot's transparent fill, so it only ever announces
+           itself through the cursor label (or in debug mode). */
         .secret {
             top: 3.5%;
-            right: 3.5%;
+            left: 3.5%;
             width: 6cqi;
             height: 6cqi;
             border: none;
@@ -316,21 +316,23 @@
 
         .email a:hover { color: #1a1a1a; }
 
-        /* Link sits in the top-left of the home paper, like a margin note. */
+        /* The green Bart from the doodle board, redrawn in the portrait's
+           ink — a speck in the top-right corner, easter-egg sized like the
+           secret button opposite him. The padding pads the hit target out
+           to ~4% of the paper so he stays hoverable/tappable; the SVG
+           stroke-width is tuned to keep him legible this small. */
         .doodle-hint {
-            position: absolute;
-            top: 4%;
-            left: 4%;
-            font-size: clamp(9px, 1.7cqi, 11px);
-            color: #b8b8b8;
-            font-style: italic;
-            letter-spacing: 0.2px;
-            text-decoration: none;
-            cursor: pointer;
-            transition: color 0.2s ease;
+            top: 3%;
+            right: 3%;
+            width: 4%;
+            padding: 1.25%;
         }
 
-        .doodle-hint:hover { color: #1a1a1a; }
+        .doodle-hint svg {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
 
         .nav-index {
             font-size: clamp(9px, 1.96cqi, 12px);
@@ -634,6 +636,106 @@
 
         .draw-overlay.open { display: flex; }
 
+        /* ===== Penance (the guard's sentencing) =====
+           Full blackout above everything, judgment cards fading through,
+           then the typed-line ritual. Only opacity ever changes, so the
+           overlay is inert (pointer-events none) whenever it's not open. */
+
+        .penance {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 5vh;
+            padding: 24px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.9s ease;
+        }
+
+        .penance.open { opacity: 1; pointer-events: auto; }
+
+        .penance-card {
+            font-family: 'HarryHand', 'Times New Roman', Times, serif;
+            font-size: clamp(42px, 11vw, 110px);
+            letter-spacing: 0.06em;
+            color: #c1281f;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+        }
+
+        .penance-card.soft {
+            color: #d8d3cb;
+            font-size: clamp(20px, 4.5vw, 40px);
+            letter-spacing: 0.02em;
+        }
+
+        .penance-card.show { opacity: 1; }
+
+        .penance-line {
+            font-family: 'HarryHand', 'Times New Roman', Times, serif;
+            font-size: clamp(18px, 3.6vw, 34px);
+            line-height: 1.6;
+            max-width: 640px;
+            text-align: center;
+            cursor: text;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .penance-line.show { opacity: 1; }
+
+        .penance-line .pch { color: #4a4a4a; white-space: pre-wrap; }
+        .penance-line .pch.done { color: #f2efe9; }
+        .penance-line .pch.next {
+            border-bottom: 2px solid #c1281f;
+            animation: penance-blink 1s steps(2) infinite;
+        }
+
+        @keyframes penance-blink { 50% { border-color: transparent; } }
+
+        .penance-line.shake { animation: penance-shake 0.3s; }
+
+        @keyframes penance-shake {
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+
+        .penance-hint {
+            font-size: 12px;
+            letter-spacing: 0.08em;
+            color: #3d3d3d;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .penance-hint.show { opacity: 1; }
+
+        /* Real input so mobile keyboards appear; visually nothing. Kept at
+           the viewport center so focusing it never scrolls the page. */
+        .penance-input {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            border: 0;
+            opacity: 0;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .penance, .penance-card, .penance-line, .penance-hint {
+                transition-duration: 0.01s;
+            }
+            .penance-line .pch.next { animation: none; }
+        }
+
         .draw-sheet {
             background: #ffffff;
             padding: 22px;
@@ -839,7 +941,7 @@
                 <a href="/poker"     class="hotspot card"     data-label="poker"     data-pan="poker"></a>
                 <a href="/projects"  class="hotspot cat"      data-label="cool stuff" data-pan="projects"></a>
 
-                <a href="#doodles" class="doodle-hint" data-pan="doodles">doodle board</a>
+                <a href="#doodles" class="hotspot doodle-hint" data-label="doodle board" data-pan="doodles" aria-label="doodle board"><svg viewBox="307 220 381 584" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><g fill="none" stroke="#1a1a1a" stroke-width="28" stroke-linecap="round" stroke-linejoin="round"><path d="M349 359Q352 330 352 324Q352 317 354 310Q355 304 358 298Q360 291 362 284Q365 277 366 272Q367 267 369 262Q371 258 373 256Q375 255 377 262Q379 269 382 276Q384 284 388 291Q391 298 394 304Q397 310 402 314Q406 318 410 321Q413 324 415 325Q417 326 419 326Q421 326 424 321Q427 316 429 308Q431 300 434 291Q436 282 438 275Q440 268 442 262Q443 257 444 254Q445 252 447 252Q449 251 450 254Q450 256 452 262Q453 268 456 274Q458 279 461 284Q464 288 467 292Q470 297 473 299Q476 301 480 302Q483 304 486 304Q488 305 492 305Q497 305 500 301Q502 297 506 289Q509 281 512 273Q516 265 519 258Q522 252 524 248Q526 244 528 242Q530 241 530 244Q530 248 530 252Q530 257 530 262Q531 266 532 270Q534 273 536 276Q539 280 540 282Q542 285 544 286Q546 288 549 288Q552 288 555 288Q558 288 561 286Q564 284 568 276Q572 269 576 261Q579 253 582 247Q586 241 588 236Q591 232 592 230Q594 228 595 230Q596 232 597 237Q598 242 600 248Q603 254 606 263Q608 272 612 282Q615 292 618 302Q621 313 624 322Q628 330 630 338Q633 346 635 353Q637 360 640 367Q642 374 644 382Q645 389 646 395Q648 401 649 408Q650 414 650 418Q650 423 650 428Q650 434 650 440Q650 446 650 452Q650 458 650 464Q650 469 650 475Q651 481 652 488Q652 494 654 499Q655 504 656 509Q657 514 658 518Q660 523 662 528Q663 534 664 538Q665 543 666 547Q667 551 668 556Q670 560 671 564Q672 568 672 572Q673 575 674 579Q675 583 676 587Q676 591 676 594Q676 597 676 602Q676 606 676 610Q676 615 676 620Q676 625 676 632Q677 638 678 644Q679 650 680 657Q680 664 680 672Q680 679 680 691Q680 703 680 718Q680 732 680 745Q680 758 680 768Q680 778 680 785Q680 792 680 794L680 796"/><path d="M342 372Q350 386 350 390Q350 394 350 398Q351 402 352 406Q354 409 355 412Q356 416 357 418Q358 421 360 424Q361 427 362 430Q363 432 364 434Q365 436 366 439L366 442"/><path d="M336 557Q327 533 328 526Q328 518 334 508Q340 498 346 488Q351 478 356 468Q362 459 366 451Q370 443 375 436Q380 429 385 426Q390 422 395 420Q400 419 406 419Q413 419 420 421Q427 423 434 430Q440 437 446 445Q451 453 455 462Q459 471 462 478Q466 486 468 492Q471 498 472 504Q473 509 473 513Q473 517 473 520Q473 523 473 526Q473 528 470 530Q466 532 460 534Q454 535 446 536Q439 538 430 540Q421 541 413 542Q405 543 398 544Q392 546 386 546Q381 547 376 547Q371 547 369 547L367 547"/><path d="M501 521Q464 495 464 486Q464 476 464 465Q464 454 464 446Q464 437 464 430Q465 423 469 418Q473 413 478 409Q484 405 490 402Q495 400 502 400Q509 399 516 398Q522 398 530 398Q537 398 544 398Q550 398 558 398Q566 398 572 398Q579 398 586 398Q594 399 600 402Q607 406 612 412Q616 417 619 423Q622 429 623 436Q624 443 624 449Q624 455 624 462Q624 468 624 472Q624 476 624 480Q624 484 624 488Q624 493 622 496Q619 499 616 502Q612 505 606 506Q599 508 591 510Q583 511 574 512Q566 514 558 516Q550 518 544 519Q539 520 534 520Q528 521 525 521L522 521"/><path d="M405 501l1 0"/><path d="M566 471Q550 445 550 448Q550 450 550 452Q550 454 550 456Q550 458 550 460L550 463"/><path d="M473 533Q450 533 444 533Q437 533 428 533Q420 533 411 534Q402 535 394 538Q387 540 381 543Q375 546 369 548Q363 549 358 552Q352 554 346 558Q341 561 336 564Q332 567 328 570Q324 573 321 578Q318 582 317 587Q316 592 316 596Q315 600 315 604Q315 609 315 612Q315 615 317 618Q319 620 326 622Q333 623 340 626Q346 628 354 630Q361 632 368 634Q374 635 380 636Q387 636 394 636Q401 636 408 636Q416 636 426 633Q435 630 443 625Q451 620 458 615Q464 610 468 608L473 606"/><path d="M433 636Q436 654 436 660Q436 667 436 676Q436 684 436 694Q437 703 438 711Q439 719 440 724Q442 730 444 734Q446 738 448 741Q450 744 452 746Q455 748 456 750Q458 752 458 754Q458 756 458 760Q458 763 458 766Q458 769 458 772Q458 776 458 778Q458 780 458 782L458 785"/><path d="M507 690Q525 667 530 665Q534 663 538 660Q541 658 544 657Q546 656 550 656Q553 655 556 655Q560 655 564 655Q567 655 571 655Q575 655 578 655Q582 655 586 656L589 656"/><path d="M532 737Q554 733 558 733Q562 733 566 733Q570 733 576 733L581 733"/></g></svg></a>
 
                 <button type="button" class="hotspot secret" id="secret" data-label="secret button" aria-label="secret button"></button>
 
@@ -1043,6 +1145,16 @@
             </div>
             <div class="draw-error" id="draw-error"></div>
         </div>
+    </div>
+
+    <!-- Penance overlay — where the doodle guard sends offenders -->
+    <div class="penance" id="penance" role="dialog" aria-modal="true" aria-live="assertive">
+        <div class="penance-card" id="penance-card"></div>
+        <div class="penance-line" id="penance-line"></div>
+        <div class="penance-hint" id="penance-hint">tap the line, then type it</div>
+        <input class="penance-input" id="penance-input" type="text"
+               autocomplete="off" autocapitalize="none" autocorrect="off"
+               spellcheck="false" aria-label="type the sentence">
     </div>
 
     <div class="cursor-label" id="cursorLabel"></div>
@@ -1845,6 +1957,7 @@
         clearBtn.addEventListener('click', () => { strokes = []; syncButtons(); redraw(); });
 
         function openDraw() {
+            loadGuard();
             strokes = [];
             current = null;
             errorEl.textContent = '';
@@ -1864,11 +1977,292 @@
         cancelBtn.addEventListener('click', closeDraw);
         overlay.addEventListener('click', (e) => { if (e.target === overlay) closeDraw(); });
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && overlay.classList.contains('open')) closeDraw();
+            if (e.key === 'Escape' && overlay.classList.contains('open') &&
+                !penanceRun) closeDraw();
         });
         window.addEventListener('resize', () => {
             if (overlay.classList.contains('open')) sizeCanvas();
         });
+
+        // ===== Doodle guard =====
+        // A ~60k-parameter CNN that scores a drawing for, well, anatomy,
+        // before it can be pinned. Trained by tools/doodle-guard/train.py on
+        // the quickdraw-appendix dataset (Moniker, CC-BY 4.0,
+        // github.com/studiomoniker/quickdraw-appendix) with Google Quick,
+        // Draw! drawings as negatives. The forward pass is hand-rolled below
+        // — four conv/pool blocks and a dense head need no ML runtime.
+        // Weights lazy-load the first time the draw overlay opens, and the
+        // whole thing fails open: no weights or a thrown error never blocks
+        // an innocent pin.
+        const GUARD_URL = 'assets/doodle-guard.bin';
+        const GUARD_SIZE = 64;
+        const GUARD_THRESHOLD = 0.9;
+        let guardModel = null;
+        let guardPromise = null;
+
+        function loadGuard() {
+            if (!guardPromise) {
+                guardPromise = fetch(GUARD_URL)
+                    .then(r => {
+                        if (!r.ok) throw new Error('HTTP ' + r.status);
+                        return r.arrayBuffer();
+                    })
+                    .then(buf => {
+                        const dv = new DataView(buf);
+                        const hlen = dv.getUint32(4, true);
+                        const meta = JSON.parse(new TextDecoder().decode(
+                            new Uint8Array(buf, 8, hlen)));
+                        let off = 8 + hlen;
+                        // buf.slice() re-bases each view so float alignment
+                        // never depends on the header's length.
+                        const take = n => {
+                            const a = new Float32Array(buf.slice(off, off + n * 4));
+                            off += n * 4;
+                            return a;
+                        };
+                        meta.layers.forEach(l => {
+                            l.w = take(l.type === 'conv' ? l.out * l.in * l.k * l.k
+                                                         : l.out * l.in);
+                            l.b = take(l.out);
+                        });
+                        guardModel = meta;
+                    })
+                    .catch(err => {
+                        console.warn('doodle guard unavailable', err);
+                        guardModel = null;
+                    });
+            }
+            return guardPromise;
+        }
+
+        // Mirrors rasterize() in tools/doodle-guard/train.py: ink drawn
+        // white-on-black, bbox-normalized and centered in a 64px square with
+        // a 6px margin, 3px round straight-segment strokes.
+        function guardRaster(strokes) {
+            let x0 = 1, y0 = 1, x1 = 0, y1 = 0;
+            strokes.forEach(s => s.p.forEach(([x, y]) => {
+                if (x < x0) x0 = x;
+                if (x > x1) x1 = x;
+                if (y < y0) y0 = y;
+                if (y > y1) y1 = y;
+            }));
+            const margin = 6;
+            const span = Math.max(x1 - x0, y1 - y0, 1e-6);
+            const k = (GUARD_SIZE - 2 * margin) / span;
+            const ox = (GUARD_SIZE - (x1 - x0) * k) / 2 - x0 * k;
+            const oy = (GUARD_SIZE - (y1 - y0) * k) / 2 - y0 * k;
+
+            const cv = document.createElement('canvas');
+            cv.width = cv.height = GUARD_SIZE;
+            const c = cv.getContext('2d', { willReadFrequently: true });
+            c.fillStyle = '#000';
+            c.fillRect(0, 0, GUARD_SIZE, GUARD_SIZE);
+            c.strokeStyle = '#fff';
+            c.lineWidth = 3;
+            c.lineCap = c.lineJoin = 'round';
+            strokes.forEach(s => {
+                c.beginPath();
+                const pts = s.p;
+                c.moveTo(pts[0][0] * k + ox, pts[0][1] * k + oy);
+                if (pts.length === 1) {
+                    c.lineTo(pts[0][0] * k + ox + 0.01, pts[0][1] * k + oy);
+                } else {
+                    for (let i = 1; i < pts.length; i++) {
+                        c.lineTo(pts[i][0] * k + ox, pts[i][1] * k + oy);
+                    }
+                }
+                c.stroke();
+            });
+            const data = c.getImageData(0, 0, GUARD_SIZE, GUARD_SIZE).data;
+            const img = new Float32Array(GUARD_SIZE * GUARD_SIZE);
+            for (let i = 0; i < img.length; i++) img[i] = data[i * 4] / 255;
+            return img;
+        }
+
+        function guardForward(img) {
+            let feat = img;
+            let size = GUARD_SIZE;
+            let chans = 1;
+            for (const l of guardModel.layers) {
+                if (l.type === 'conv') {
+                    // 3x3 conv, pad 1, relu — then 2x2 maxpool
+                    const conv = new Float32Array(l.out * size * size);
+                    for (let oc = 0; oc < l.out; oc++) {
+                        const oBase = oc * size * size;
+                        for (let y = 0; y < size; y++) {
+                            for (let x = 0; x < size; x++) {
+                                let acc = l.b[oc];
+                                for (let ic = 0; ic < chans; ic++) {
+                                    const wBase = (oc * chans + ic) * 9;
+                                    const fBase = ic * size * size;
+                                    for (let ky = -1; ky <= 1; ky++) {
+                                        const yy = y + ky;
+                                        if (yy < 0 || yy >= size) continue;
+                                        for (let kx = -1; kx <= 1; kx++) {
+                                            const xx = x + kx;
+                                            if (xx < 0 || xx >= size) continue;
+                                            acc += l.w[wBase + (ky + 1) * 3 + kx + 1]
+                                                 * feat[fBase + yy * size + xx];
+                                        }
+                                    }
+                                }
+                                conv[oBase + y * size + x] = acc > 0 ? acc : 0;
+                            }
+                        }
+                    }
+                    const half = size >> 1;
+                    const pooled = new Float32Array(l.out * half * half);
+                    for (let ch = 0; ch < l.out; ch++) {
+                        const iBase = ch * size * size;
+                        const oBase = ch * half * half;
+                        for (let y = 0; y < half; y++) {
+                            for (let x = 0; x < half; x++) {
+                                const i0 = iBase + (y * 2) * size + x * 2;
+                                pooled[oBase + y * half + x] = Math.max(
+                                    conv[i0], conv[i0 + 1],
+                                    conv[i0 + size], conv[i0 + size + 1]);
+                            }
+                        }
+                    }
+                    feat = pooled;
+                    size = half;
+                    chans = l.out;
+                } else {
+                    // global average pool + dense + sigmoid
+                    let logit = l.b[0];
+                    for (let ch = 0; ch < chans; ch++) {
+                        let s = 0;
+                        const base = ch * size * size;
+                        for (let i = 0; i < size * size; i++) s += feat[base + i];
+                        logit += (s / (size * size)) * l.w[ch];
+                    }
+                    return 1 / (1 + Math.exp(-logit));
+                }
+            }
+            return 0;
+        }
+
+        async function guardScore(strokes) {
+            await loadGuard();
+            if (!guardModel) return 0;
+            return guardForward(guardRaster(strokes));
+        }
+
+        // ===== Penance =====
+        // A conviction doesn't get an error message, it gets a ceremony:
+        // blackout, sentencing, and three typed lines before the offender
+        // is released to draw something wholesome. Escapable only by
+        // leaving the page.
+        const penanceEl = document.getElementById('penance');
+        const penanceCard = document.getElementById('penance-card');
+        const penanceLine = document.getElementById('penance-line');
+        const penanceHint = document.getElementById('penance-hint');
+        const penanceInput = document.getElementById('penance-input');
+        const PENANCE_TEXT = "i will not draw penises on harry's website";
+        let penanceRun = false;
+
+        const pWait = ms => new Promise(r => setTimeout(r, ms));
+        // Reduced motion collapses the fades but keeps the ritual.
+        const pT = ms => (matchMedia('(prefers-reduced-motion: reduce)').matches
+            ? Math.min(ms, 150) : ms);
+
+        async function penanceShow(text, { red = false, hold = 1400 } = {}) {
+            penanceCard.textContent = text;
+            penanceCard.classList.toggle('soft', !red);
+            penanceCard.classList.add('show');
+            await pWait(pT(900) + pT(hold));
+            penanceCard.classList.remove('show');
+            await pWait(pT(900));
+        }
+
+        function penanceTypeLine() {
+            return new Promise(resolve => {
+                penanceLine.innerHTML = '';
+                const chars = [];
+                for (const ch of PENANCE_TEXT) {
+                    const s = document.createElement('span');
+                    s.className = 'pch';
+                    s.textContent = ch;
+                    penanceLine.appendChild(s);
+                    chars.push({ ch, el: s });
+                }
+                let i = 0;
+                chars[0].el.classList.add('next');
+                penanceLine.classList.add('show');
+                penanceHint.classList.add('show');
+                penanceInput.value = '';
+                penanceInput.focus({ preventScroll: true });
+
+                const matches = (typed, want) => {
+                    typed = typed.toLowerCase();
+                    // smart-punctuation keyboards send ’ for '
+                    if (want === "'") return typed === "'" || typed === '’';
+                    return typed === want;
+                };
+                const advance = (typed) => {
+                    if (!matches(typed, chars[i].ch)) {
+                        penanceLine.classList.remove('shake');
+                        void penanceLine.offsetWidth;   // restart the animation
+                        penanceLine.classList.add('shake');
+                        return;
+                    }
+                    chars[i].el.classList.remove('next');
+                    chars[i].el.classList.add('done');
+                    i++;
+                    if (i < chars.length) {
+                        chars[i].el.classList.add('next');
+                        return;
+                    }
+                    penanceInput.removeEventListener('input', onInput);
+                    penanceLine.classList.remove('show');
+                    penanceHint.classList.remove('show');
+                    setTimeout(resolve, pT(700));
+                };
+                const onInput = () => {
+                    const v = penanceInput.value;
+                    penanceInput.value = '';
+                    for (const ch of v) advance(ch);
+                };
+                penanceInput.addEventListener('input', onInput);
+            });
+        }
+
+        // Keep the hidden input focused so keystrokes always land; a tap
+        // anywhere re-summons the mobile keyboard.
+        penanceEl.addEventListener('pointerdown', (e) => {
+            if (!penanceRun) return;
+            e.preventDefault();
+            penanceInput.focus({ preventScroll: true });
+        });
+        // The sentence is typed, not pasted.
+        penanceInput.addEventListener('paste', e => e.preventDefault());
+
+        async function runPenance() {
+            if (penanceRun) return;
+            penanceRun = true;
+            track('penance_started', {});
+            penanceEl.classList.add('open');
+            await pWait(pT(1000) + pT(900));        // blackout, then a beat
+            await penanceShow('BAD BOY', { red: true, hold: 1600 });
+            await penanceShow('REPENT', { red: true, hold: 1600 });
+            await penanceTypeLine();
+            await penanceShow('good. again', { hold: 1100 });
+            await penanceTypeLine();
+            await penanceShow("i hope you're learning your lesson, again",
+                              { hold: 1600 });
+            await penanceShow('one more time', { hold: 1100 });
+            await penanceTypeLine();
+            await penanceShow('good boy, now go draw a flower or something',
+                              { hold: 2000 });
+            strokes = [];
+            current = null;
+            redraw();
+            syncButtons();
+            errorEl.textContent = '';
+            penanceEl.classList.remove('open');
+            penanceRun = false;
+            track('penance_completed', {});
+        }
 
         pinBtn.addEventListener('click', async () => {
             if (!strokes.length || pinBtn.dataset.busy === '1') return;
@@ -1884,6 +2278,20 @@
             pinBtn.disabled = true;
             pinBtn.textContent = 'pinning…';
             errorEl.textContent = '';
+
+            try {
+                const score = await guardScore(strokes);
+                if (score >= GUARD_THRESHOLD) {
+                    track('doodle_blocked', { score: +score.toFixed(3) });
+                    pinBtn.dataset.busy = '0';
+                    pinBtn.textContent = 'pin it up';
+                    syncButtons();
+                    runPenance();
+                    return;
+                }
+            } catch (err) {
+                console.warn('guard check failed', err);
+            }
 
             // Size is chosen once, at submit, so the doodle keeps the same
             // footprint on the board for everybody.

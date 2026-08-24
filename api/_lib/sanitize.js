@@ -9,6 +9,9 @@ const ALLOWED_EVENTS = new Set([
   'essay_scroll',
   'outbound_click',
   'doodle_submit',
+  'doodle_blocked',
+  'penance_started',
+  'penance_completed',
 ]);
 
 const ALLOWED_PROP_KEYS = new Set([
@@ -20,6 +23,7 @@ const ALLOWED_PROP_KEYS = new Set([
   'host',
   'label',
   'href',
+  'score',
 ]);
 
 function clip(value, max) {
