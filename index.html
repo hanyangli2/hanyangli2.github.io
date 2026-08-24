@@ -716,6 +716,36 @@
 
         .penance-hint.show { opacity: 1; }
 
+        .penance-choice {
+            display: flex;
+            gap: clamp(28px, 8vw, 72px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+
+        .penance-choice.show { opacity: 1; pointer-events: auto; }
+
+        .penance-choice button {
+            font-family: 'HarryHand', 'Times New Roman', Times, serif;
+            font-size: clamp(22px, 5vw, 40px);
+            letter-spacing: 0.04em;
+            background: none;
+            border: 0;
+            border-bottom: 2px solid transparent;
+            color: #6a6a6a;
+            padding: 2px 10px;
+            cursor: pointer;
+            transition: color 0.25s ease, border-color 0.25s ease;
+        }
+
+        .penance-choice button:hover,
+        .penance-choice button:focus-visible {
+            color: #f2efe9;
+            border-bottom-color: #c1281f;
+            outline: none;
+        }
+
         /* Real input so mobile keyboards appear; visually nothing. Kept at
            the viewport center so focusing it never scrolls the page. */
         .penance-input {
@@ -730,7 +760,8 @@
         }
 
         @media (prefers-reduced-motion: reduce) {
-            .penance, .penance-card, .penance-line, .penance-hint {
+            .penance, .penance-card, .penance-line, .penance-hint,
+            .penance-choice {
                 transition-duration: 0.01s;
             }
             .penance-line .pch.next { animation: none; }
@@ -1150,6 +1181,10 @@
     <!-- Penance overlay — where the doodle guard sends offenders -->
     <div class="penance" id="penance" role="dialog" aria-modal="true" aria-live="assertive">
         <div class="penance-card" id="penance-card"></div>
+        <div class="penance-choice" id="penance-choice">
+            <button type="button" id="penance-yes">yes</button>
+            <button type="button" id="penance-no">no</button>
+        </div>
         <div class="penance-line" id="penance-line"></div>
         <div class="penance-hint" id="penance-hint">tap the line, then type it</div>
         <input class="penance-input" id="penance-input" type="text"
@@ -2158,8 +2193,12 @@
         const penanceLine = document.getElementById('penance-line');
         const penanceHint = document.getElementById('penance-hint');
         const penanceInput = document.getElementById('penance-input');
+        const penanceChoice = document.getElementById('penance-choice');
+        const penanceYes = document.getElementById('penance-yes');
+        const penanceNo = document.getElementById('penance-no');
         const PENANCE_TEXT = "i will not draw penises on harry's website";
         let penanceRun = false;
+        let penanceAsking = false;
 
         const pWait = ms => new Promise(r => setTimeout(r, ms));
         // Reduced motion collapses the fades but keeps the ritual.
@@ -2227,10 +2266,47 @@
             });
         }
 
+        // The one question with a way out. "no" sends the offender back to
+        // the top; only "yes" reaches the flower.
+        function penanceAsk(question) {
+            return new Promise(resolve => {
+                penanceAsking = true;
+                penanceInput.blur();          // drop the mobile keyboard
+                penanceCard.textContent = question;
+                penanceCard.classList.add('soft');
+                penanceCard.classList.add('show');
+                penanceChoice.classList.add('show');
+
+                const finish = (answer) => {
+                    penanceAsking = false;
+                    penanceYes.removeEventListener('click', onYes);
+                    penanceNo.removeEventListener('click', onNo);
+                    document.removeEventListener('keydown', onKey, true);
+                    penanceChoice.classList.remove('show');
+                    penanceCard.classList.remove('show');
+                    setTimeout(() => resolve(answer), pT(900));
+                };
+                const onYes = () => finish(true);
+                const onNo = () => finish(false);
+                const onKey = (e) => {
+                    const k = e.key.toLowerCase();
+                    if (k !== 'y' && k !== 'n') return;
+                    e.preventDefault();
+                    finish(k === 'y');
+                };
+
+                penanceYes.addEventListener('click', onYes);
+                penanceNo.addEventListener('click', onNo);
+                document.addEventListener('keydown', onKey, true);
+            });
+        }
+
         // Keep the hidden input focused so keystrokes always land; a tap
-        // anywhere re-summons the mobile keyboard.
+        // anywhere re-summons the mobile keyboard. The yes/no buttons are the
+        // exception — they need the tap themselves.
         penanceEl.addEventListener('pointerdown', (e) => {
-            if (!penanceRun) return;
+            if (!penanceRun || penanceAsking) return;
+            if (e.target.closest('.penance-choice')) return;
             e.preventDefault();
             penanceInput.focus({ preventScroll: true });
         });
@@ -2243,15 +2319,25 @@
             track('penance_started', {});
             penanceEl.classList.add('open');
             await pWait(pT(1000) + pT(900));        // blackout, then a beat
-            await penanceShow('BAD BOY', { red: true, hold: 1600 });
-            await penanceShow('REPENT', { red: true, hold: 1600 });
-            await penanceTypeLine();
-            await penanceShow('good. again', { hold: 1100 });
-            await penanceTypeLine();
-            await penanceShow("i hope you're learning your lesson, again",
-                              { hold: 1600 });
-            await penanceShow('one more time', { hold: 1100 });
-            await penanceTypeLine();
+
+            // Three lines, then the question. Answer "no" and the whole
+            // ceremony starts over.
+            let rounds = 0;
+            let remorseful = false;
+            while (!remorseful) {
+                rounds++;
+                await penanceShow('not cool man', { red: true, hold: 1600 });
+                await penanceShow('REPENT', { red: true, hold: 1600 });
+                await penanceTypeLine();
+                await penanceShow('good. again', { hold: 1100 });
+                await penanceTypeLine();
+                await penanceShow("i hope you're learning your lesson, again",
+                                  { hold: 1600 });
+                await penanceShow('one more time', { hold: 1100 });
+                await penanceTypeLine();
+                remorseful = await penanceAsk('do you feel extreme remorse?');
+            }
+
             await penanceShow('good boy, now go draw a flower or something',
                               { hold: 2000 });
             strokes = [];
@@ -2261,7 +2347,7 @@
             errorEl.textContent = '';
             penanceEl.classList.remove('open');
             penanceRun = false;
-            track('penance_completed', {});
+            track('penance_completed', { rounds });
         }
 
         pinBtn.addEventListener('click', async () => {

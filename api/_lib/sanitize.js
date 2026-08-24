@@ -24,6 +24,7 @@ const ALLOWED_PROP_KEYS = new Set([
   'label',
   'href',
   'score',
+  'rounds',
 ]);
 
 function clip(value, max) {
